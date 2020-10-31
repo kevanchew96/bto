@@ -278,7 +278,11 @@ resale_grant<- function(income, flat_type, distance_from_p, with_parents, is_mar
   
   
   breakdown_plot <- ggplot(df, aes(fill=grant_type, y=grant_amount, x=total_resale_grant)) + 
-    geom_bar(position="stack", stat="identity") + ylab("Grant Amount (SG$)") + xlab("") + scale_fill_discrete(name = "Type of Grant") + scale_y_continuous(label=comma)
+    geom_bar(position="stack", stat="identity") + 
+    geom_text(aes(label = stat(y), group = total_resale_grant), stat = 'summary', fun=sum) +  #ADD THE TOTAL SUM ABOVE
+    ylab("Grant Amount (SG$)") + xlab("") + 
+    scale_fill_discrete(name = "Type of Grant") + 
+    scale_y_continuous(label=comma) 
   
   breakdown <- ggplotly(breakdown_plot)
   
@@ -323,7 +327,7 @@ bto_grant<- function(income, is_married, citizenship, application){
   
   
   breakdown_plot <- ggplot(df, aes(fill=grant_type, y=grant_amount, x=total_bto_grant)) + 
-    geom_bar(position="stack", stat="identity") + ylab("Grant Amount (SG$)") + xlab("") + scale_fill_discrete(name = "Type of Grant")
+    geom_bar(position="stack", stat="identity") + ylab("Grant Amount (SG$)") + xlab("") + scale_fill_discrete(name = "Type of Grant") + geom_text(aes(label = stat(y), group = total_bto_grant), stat = 'summary', fun=sum)
   
   breakdown <- ggplotly(breakdown_plot)
   
