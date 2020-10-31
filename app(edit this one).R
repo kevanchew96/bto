@@ -17,6 +17,7 @@ library(shinycssloaders)
 library(tidyr)
 library(dplyr)
 library(DT)
+library(geosphere)
 ggmap::register_google(key = 'AIzaSyBtkpz6CUH-lwaRTLrfnBbGPpaj4pst6Z8')
 
 key <- "AIzaSyBtkpz6CUH-lwaRTLrfnBbGPpaj4pst6Z8"
@@ -335,19 +336,22 @@ bto_grant<- function(income, is_married, citizenship, application){
 
 
 
-#get coordinates for parents 
+#get your coordinates from ID (lon,lat)
 
-parent_lonlat <- function(ID){
+find_lonlat <- function(ID){
   ID_char <- as.character(ID)
   if((substring(ID, 1, 1)) == 'B'|(substring(ID, 1, 1)) == 'b'){
+    
     row_index <- as.numeric(substring(ID, 2, 9))
     lon <- bto[row_index, 9]
     lat <- bto[row_index, 10]
   }else if((substring(ID, 1, 1)) == 'R'| (substring(ID, 1, 1)) == 'r'){
+    
     row_index <- as.numeric(substring(ID, 2, 9))
     lon <- resale[row_index, 9]
     lat <- resale[row_index, 10]
   }else if((substring(ID, 1, 1)) == 'M'| (substring(ID, 1, 1)) == 'm'){
+    
     row_index <- as.numeric(substring(ID, 2, 9))
     lon <- mop[row_index, 16]
     lat <- mop[row_index, 17]
@@ -355,7 +359,20 @@ parent_lonlat <- function(ID){
   return(c(lon,lat))
 }
 
-  
+
+
+#find distance from parents postal code to selected (lon, lat)
+
+measure_distance_from_p <- function(parent_postal_code, your_lon_lat){  #your_lon_lat must be a vector of (lon,lat) as generated from function find_lonlat
+  parent_lat <- as.numeric(geocode(paste("Singapore", as.character(parent_postal_code)))[2])
+  parent_lon <- as.numeric(geocode(paste("Singapore", as.character(parent_postal_code)))[1])
+  your_lon<- as.numeric(your_lon_lat[1])
+  your_lat <- as.numeric(your_lon_lat[2])
+  dist <- as.numeric(distm(c(parent_lon, parent_lat), c(your_lon, your_lat), fun = distHaversine))/1000
+  return(dist)
+}
+
+
 
 
 ####################  UI FUNCTIONS #####################################################################################
