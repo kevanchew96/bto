@@ -9,6 +9,8 @@ library(ggplot2)
 library(plotly)
 library(scales)
 library(ggmap)
+library(shiny)
+library(ggplot2)
 library(jsonlite)
 library(googleway)
 library(leaflet)
@@ -19,7 +21,7 @@ library(dplyr)
 library(DT)
 ggmap::register_google(key = 'AIzaSyBtkpz6CUH-lwaRTLrfnBbGPpaj4pst6Z8')
 
-
+#JJ_was_here
 
 key <- "AIzaSyBtkpz6CUH-lwaRTLrfnBbGPpaj4pst6Z8"
 set_key(key = key)
@@ -50,7 +52,10 @@ mop <- mop %>% rename(ID=X,`Town/Name`=`Town.Name`,`Project Name`=`BTO.Project.N
                       `End of MOP`=`End_of_mop`) %>% subset(select=-c(idMOP)) %>% select(-Type,Type)
 
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> parent of d683cd3... Update app(edit this one).R
 # Primary schools
 schools <- read.csv("Primary Schools.csv")
 
