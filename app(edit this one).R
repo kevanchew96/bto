@@ -21,6 +21,8 @@ library(dplyr)
 library(DT)
 ggmap::register_google(key = 'AIzaSyBtkpz6CUH-lwaRTLrfnBbGPpaj4pst6Z8')
 
+#JJ_was_here
+
 key <- "AIzaSyBtkpz6CUH-lwaRTLrfnBbGPpaj4pst6Z8"
 set_key(key = key)
 
