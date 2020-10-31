@@ -51,7 +51,6 @@ mop <- mop %>% rename(ID=X,`Town/Name`=`Town.Name`,`Project Name`=`BTO.Project.N
 
 
 
-
 # Primary schools
 schools <- read.csv("Primary Schools.csv")
 
@@ -336,6 +335,20 @@ bto_grant<- function(income, is_married, citizenship, application){
   
   
 }
+
+
+
+#get coordinates for parents 
+
+parent_lonlat <- function(ID){
+  ID_char <- as.character(ID)
+  if(ID_char[1] == B){
+    
+  }
+  
+}
+  
+
 
 ####################  UI FUNCTIONS #####################################################################################
 
