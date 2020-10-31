@@ -9,8 +9,6 @@ library(ggplot2)
 library(plotly)
 library(scales)
 library(ggmap)
-library(shiny)
-library(ggplot2)
 library(jsonlite)
 library(googleway)
 library(leaflet)
@@ -50,10 +48,6 @@ mop <- mop %>% rename(ID=X,`Town/Name`=`Town.Name`,`Project Name`=`BTO.Project.N
                       `End of MOP`=`End_of_mop`) %>% subset(select=-c(idMOP)) %>% select(-Type,Type)
 
 
-<<<<<<< HEAD
-
-=======
->>>>>>> parent of d683cd3... Update app(edit this one).R
 # Primary schools
 schools <- read.csv("Primary Schools.csv")
 
@@ -345,11 +339,22 @@ bto_grant<- function(income, is_married, citizenship, application){
 
 parent_lonlat <- function(ID){
   ID_char <- as.character(ID)
-  if(ID_char[1] == B){
-    
+  if((substring(ID, 1, 1)) == 'B'|(substring(ID, 1, 1)) == 'b'){
+    row_index <- as.numeric(substring(ID, 2, 9))
+    lon <- bto[row_index, 9]
+    lat <- bto[row_index, 10]
+  }else if((substring(ID, 1, 1)) == 'R'| (substring(ID, 1, 1)) == 'r'){
+    row_index <- as.numeric(substring(ID, 2, 9))
+    lon <- resale[row_index, 9]
+    lat <- resale[row_index, 10]
+  }else if((substring(ID, 1, 1)) == 'M'| (substring(ID, 1, 1)) == 'm'){
+    row_index <- as.numeric(substring(ID, 2, 9))
+    lon <- mop[row_index, 16]
+    lat <- mop[row_index, 17]
   }
-  
+  return(c(lon,lat))
 }
+
   
 
 
