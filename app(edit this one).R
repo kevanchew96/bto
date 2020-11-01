@@ -775,7 +775,7 @@ server <- function(input, output){
     
     resale_grant(input$NetIncome, 
                  input$flat_type_1, 
-                 3, 
+                 measure_distance_from_p(input$parent_address, (find_lonlat(input$home_type_1))), 
                  (input$with_parents == "Yes"), 
                  (input$marital_status == "Married") ,
                  input$Nationality, 
@@ -789,7 +789,7 @@ server <- function(input, output){
   output$price_grant_barchart_2 <- renderPlotly( {
   resale_grant(input$NetIncome, 
                input$flat_type_2, 
-               3, 
+               measure_distance_from_p(input$parent_address, (find_lonlat(input$home_type_1))), 
                (input$with_parents == "Yes"), 
                (input$marital_status == "Married") , 
                input$Nationality, 
