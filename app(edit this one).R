@@ -339,6 +339,29 @@ bto_grant<- function(income, is_married, citizenship, application){
 }
 
 
+#downpayment logic
+
+downpayment <- function (base_price, income, is_married, citizenship) {
+  downpayment_amt <- 0
+  
+  if (is_married == T & income <= 14000 ) {
+    downpayment_amt <- 0.1 * base_price
+    loan_type <- "HDB"
+  }
+  else if (is_married == F & income <= 7000){
+    downpayment_amt <- 0.1 * base_price
+    loan_type <- "HDB"
+  }
+  else {
+    downpayment_amt <- 0.2 * base_price
+    loan_type <- "Bank Loan"
+  }
+  return (c(downpayment_amt, loan_type))
+}
+
+
+
+
 
 #get your coordinates from ID (lon,lat)
 
@@ -357,8 +380,8 @@ find_lonlat <- function(ID){
   }else if((substring(ID, 1, 1)) == 'M'| (substring(ID, 1, 1)) == 'm'){
     
     row_index <- as.numeric(substring(ID, 2, 9))
-    lon <- mop[row_index, 16]
-    lat <- mop[row_index, 17]
+    lon <- mop[row_index, 14]
+    lat <- mop[row_index, 15]
   }
   return(c(lon,lat))
 }
@@ -756,8 +779,8 @@ server <- function(input, output){
     leaflet() %>%  setView(lat = 1.376875, lng = 103.822169,
                            zoom = 11) %>%
       addTiles() %>%
-      addMarkers(lat = resale[input$home_type_1,"lat"], lng = resale[input$home_type_1,"lon"], popup = resale[input$home_type_1,"Address"] ) %>%
-      addMarkers(lat = resale[input$home_type_2,"lat"], lng = resale[input$home_type_2,"lon"], popup = resale[input$home_type_2,"Address"]) %>%
+      addMarkers(lat = as.numeric((find_lonlat(input$home_type_1))[2]), lng = as.numeric((find_lonlat(input$home_type_1))[1]) ) %>%
+      addMarkers(lat = as.numeric((find_lonlat(input$home_type_2))[2]), lng = as.numeric((find_lonlat(input$home_type_2))[1]) ) %>%
       addMarkers(lat = as.numeric(geocode(paste("Singapore", as.character(input$parent_address)))[2]), lng = as.numeric(geocode(paste("Singapore", as.character(input$parent_address)))[1]), popup = "Your Parents' Home")
       
     
@@ -789,7 +812,7 @@ server <- function(input, output){
   output$price_grant_barchart_2 <- renderPlotly( {
   resale_grant(input$NetIncome, 
                input$flat_type_2, 
-               measure_distance_from_p(input$parent_address, (find_lonlat(input$home_type_1))), 
+               measure_distance_from_p(input$parent_address, (find_lonlat(input$home_type_2))), 
                (input$with_parents == "Yes"), 
                (input$marital_status == "Married") , 
                input$Nationality, 
