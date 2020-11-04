@@ -18,6 +18,7 @@ library(tidyr)
 library(dplyr)
 library(DT)
 library(geosphere)
+library(htmlwidgets)
 ggmap::register_google(key = 'AIzaSyBtkpz6CUH-lwaRTLrfnBbGPpaj4pst6Z8')
 
 key <- "AIzaSyBtkpz6CUH-lwaRTLrfnBbGPpaj4pst6Z8"
@@ -26,8 +27,8 @@ set_key(key = key)
 ##############################################################################################################################################################################
 #DATA SOURCE & CLEANING ################################################################################################################################################################
 
-#final_out <- read.csv("Polygon_Leaflet.csv")
-#resale_avail <- read.csv("Resale_Avail.csv")
+final_out <- read.csv("Resale_Region.csv")
+resale_avail <- read.csv("Resale_Avail.csv")
 
 bto <- read.csv("BTOPredict.csv")
 bto[6,1] <- 6
@@ -465,46 +466,66 @@ financePlan <- function(){
 
 plot_polygon <- function(data,room_type){
   data1 <- data %>% filter(Room==room_type)
-  data1_reg<- data1 %>% group_by(Region) %>% summarise(Average_Price=mean(Price))
+  data1_reg<- data1 %>% group_by(Postal_District) %>% summarise(Average_Price=mean(Price))
   
-  data_out <- data.frame(Region = c('Central','East','North','North-East','West'))
+  data_out <- data.frame(Postal_District = seq(1,28,1))
   data_out <- left_join(data_out,data1_reg)
   
-  SG <- getData('GADM', country='SG', level =1)
-  SG@data <- merge(SG@data,data_out,by.x="NAME_1",by.y="Region")
+  shapeData <- readOGR(dsn="C:\\Users\\jeanl\\Documents\\GitHub\\bto",layer="districts")
+  data_plot <- merge(shapeData,data_out,by.x="PLN_AREA_N",by.y="Postal_District")
   
-  popup <- paste0("<strong>Name: </strong>",SG$NAME_1,"<strong> Average Price:</strong>", round(SG$Average_Price))
+  popup <- paste0("<b>","District: ","</b>",data_plot$PLN_AREA_N,"<br/>",
+                  "<b>","General Location: ","</b>",data_plot$Gnrl_Lc,"<br/>",
+                  "<b>", "Average Price: ", "</b>", round(data_plot$Average_Price,digits=2))
   
-  pal <- colorNumeric( palette = "Reds", domain = SG$Average_Price)
   
-  m<-leaflet() %>% addTiles() %>% addPolygons(data=SG, weight = 2, 
-                                              stroke = TRUE, smoothFactor = 0.1, fillOpacity = 0.8, color = ~pal(Average_Price), popup=popup)
+  pal <- colorNumeric( palette = "PuRd", domain = data_plot$Average_Price)
+  
+  m <-leaflet(data = data_plot) %>% addTiles() %>% addPolygons(data=data_plot, weight = 1, stroke = TRUE, color="grey", smoothFactor = 0.5, fillOpacity = 0.8, fillColor = ~pal(data_plot$Average_Price),
+                                                               popup = popup, dashArray = "") %>% addLegend("bottomright", pal = pal, values = ~Average_Price,labFormat = labelFormat(prefix = "$")) %>% setView(103.851245,1.3445821
+,zoom = 10.5)
   m
 }
 
 plot_polygon2 <- function(data,room_type){
   data1 <- data %>% filter(Room==room_type)
   
-  SG <- getData('GADM', country='SG', level =1)
-  SG@data <- merge(SG@data,data1,by.x="NAME_1",by.y="Region")
+  shapeData <- readOGR(dsn="C:\\Users\\jeanl\\Documents\\GitHub\\bto",layer="districts")
+  data_plot <- merge(shapeData,data1,by.x="PLN_AREA_N",by.y="Postal_District")
   
-  popup <- paste0("<strong>Name: </strong>",SG$NAME_1,"<strong> Total Availability:</strong>", round(SG$Availability))
+  popup <- paste0("<b>","District: ","</b>",data_plot$PLN_AREA_N,"<br/>",
+                  "<b>","General Location: ","</b>",data_plot$Gnrl_Lc,"<br/>",
+                  "<b>", "Number Of Units Available: ", "</b>", data_plot$Availability)
   
-  pal <- colorNumeric( palette = "Reds", domain = SG$Availability)
   
-  m<-leaflet() %>% addTiles() %>% addPolygons(data=SG, weight = 2, 
-                                              stroke = TRUE, smoothFactor = 0.1, fillOpacity = 0.8, color = ~pal(Availability), popup=popup)
+  pal <- colorNumeric( palette = "YlGn", domain = data_plot$Availability)
+  
+  m <-leaflet(data = data_plot) %>% addTiles() %>% addPolygons(data=data_plot, weight = 1, stroke = TRUE, color="grey", smoothFactor = 0.5, fillOpacity = 0.8, fillColor = ~pal(data_plot$Availability),
+                                                               popup = popup, dashArray = "") %>% addLegend("bottomright", pal = pal, values = ~Availability) %>% setView(103.851245,1.3445821
+                                                                                                                                                                          ,zoom = 10.5)
+  
+  m <- m %>% htmlwidgets::prependContent(html_fix)                   # Insert into leaflet HTML code
   m
 }
 
 OverviewPrices <- function(){
   fluidPage(
+    tagList(
+      div(class = "container",style="margin-bottom:50px;",
+          h1("Overview of Prices & Flat Availability", class = "title fit-h1"),
+          p("Use the maps below to find out how prices and availability of housing vary across districts"),
+          p("You can navigate through the tabs and use the control panel on the left to view data and flat types of your interest."),
+          p("Click on the specific district on the map for more information"),
+      )),
     sidebarPanel(width=3,
                  radioButtons("leaflet_type","Data Shown",c("Average Price","Total Availability"))
     ),
     mainPanel(
       
-      uiOutput("showleaflet")
+      uiOutput("showleaflet"),
+      tags$div(style="margin-top:20px;",
+        p("Want to explore the housing options and facilities available in each district?")),
+      actionButton(inputId = "bttn1",label= "Go to Housing View")
     )
   )
 }
@@ -523,7 +544,7 @@ font-size: 15px;
 ###################################################################################################################################################################
 ############   UI STARTS HERE   ###################################################################################################################################
 
-ui <- fluidPage(theme=shinytheme("sandstone"),navbarPage(title = "AppName",
+ui <- fluidPage(theme=shinytheme("sandstone"),navbarPage(title = "AppName",id="navbar",
                                                          fluid = TRUE, 
                                                          collapsible = TRUE,
                                                          
@@ -544,7 +565,7 @@ ui <- fluidPage(theme=shinytheme("sandstone"),navbarPage(title = "AppName",
                                                          
                                                          # ----------------------------------
                                                          # tab panel 2 
-                                                         tabPanel("Housing View", fluid = TRUE, tags$style(button_color_css),
+                                                         tabPanel("Housing View", value = "housingview", fluid = TRUE, tags$style(button_color_css),
                                                                   sidebarLayout(
                                                                     sidebarPanel(
                                                                       
@@ -654,7 +675,7 @@ ui <- fluidPage(theme=shinytheme("sandstone"),navbarPage(title = "AppName",
 ############  SERVER STARTS HERE   ################################################################################################################################
 
 
-server <- function(input, output){
+server <- function(input, output,session){
   output$ui <- renderUI({
     if (is.null(input$marital_status))
       return()
@@ -767,6 +788,9 @@ server <- function(input, output){
     plot_polygon2(resale_avail,"Multi-Gen/Jumbo")
   })
   
+  observeEvent(input$bttn1, {
+    updateTabsetPanel(session, inputId = "navbar", selected = "housingview")
+  })
 
   
 
