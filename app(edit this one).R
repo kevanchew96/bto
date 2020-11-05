@@ -28,7 +28,6 @@ set_key(key = key)
 #DATA SOURCE & CLEANING ################################################################################################################################################################
 
 final_out <- read.csv("Resale_Region.csv")
-resale_avail <- read.csv("Resale_Avail.csv")
 
 bto <- read.csv("BTOPredict.csv")
 bto[6,1] <- 6
