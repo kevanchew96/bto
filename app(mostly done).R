@@ -39,7 +39,9 @@ mop <- mop %>% rename(ID=X,`Town/Name`=`Town.Name`,`Project Name`=`BTO.Project.N
                       `Studio Units`=`No.of.Studio.units`,`2-Room Units`=`No.of.2.room.units`,
                       `3-Room Units`=`No.of.3.room.units`,`4-Room Units`=`No.of.4.room.units`,
                       `5-Room Units`=`No.of.5.room.units`, `3Gen Units`=`No.of.3.gen.units`,`Total Units`=`Total.no.of.units`, 
-                      `End of MOP`=`End_of_mop`) %>% subset(select=-c(idMOP)) %>% select(-Type,Type)
+                      `End of MOP`=`End_of_mop`) %>% subset(select=-c(idMOP))
+
+mop <- mop[,c(1,2,3,4,14,5,6,7,8,9,10,11,12,13,15,16)] %>% select(-Type,Type)
 
 
 # Primary schools
@@ -169,10 +171,14 @@ ui <- fluidPage(
                         withSpinner(leafletOutput(outputId = "map")),
                         hr(),
                         fluidRow(column(7,
-                                        helpText("Tip: Click Resale/Soon-to-MOP locations to 
+                                        helpText("Click on housing locations to 
                                                  populate table below with information on houses 
                                                  in that block")
-                          ),
+                                        ), 
+                                column(7,  
+                                        helpText("Note that MOP houses will
+                                                 only be on the resale market after certain number 
+                                                 of years, with about 60% estimated to be available"))
                         ),
                         br(),
                         fluidRow(
@@ -201,7 +207,7 @@ server <- function(input, output)
                  icon=makeIcon("CCs.png",iconWidth = 12, iconHeight =12), group="Community Centres") %>%
       addMarkers(data=mrt, popup = ~final, label = ~final, 
                  icon=makeIcon("Train.png",iconWidth = 12, iconHeight =12), group="MRTs") %>%
-      addLayersControl(overlayGroups=c("Primary Schools","Parks","Community Centres","MRTs"))
+      addLayersControl(overlayGroups=c("Primary Schools","Parks","Community Centres","MRTs")) 
   })
   
   # Set view to area

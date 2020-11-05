@@ -142,11 +142,18 @@ parks
 
 schools <- read.csv("Primary Schools.csv")
 btocurrent <- read.csv("BTONov.csv")
+html_legend <- "<img src='School.png'>School<br/>"
 leaflet() %>% addTiles() %>%
 addMarkers(data=schools, ~lon, ~lat,popup= ~Schools, label = ~Schools,
                  icon=makeIcon("School.png",iconWidth = 12, iconHeight =12), group="Schools") %>% #image source: https://pixabay.com/vectors/book-books-library-books-reading-2022464/
+    addControl(html=html_legend,position = "bottomright")
+```   
+    
 addMarkers(data=parks, popup = ~Description, label = ~Description, icon=makeIcon("Tree.png",iconWidth = 12, iconHeight =12), group="Parks") %>% #image source: https://pixabay.com/vectors/tree-forest-trunk-nature-leaves-576847/
-addMarkers(data=df,~lon,~lat, popup= ~`Town.Estate`, label = ~Month.of.Launch, icon=makeIcon("House.png",iconWidth = 12, iconHeight =12), group="BTOcurrent") #%>% # image source: https://pixabay.com/vectors/house-icon-home-symbol-sign-308936/ addLayersControl(overlayGroups=c("Schools","Parks","BTOcurrent")) #%>% addCircleMarkers(parents house)
+addMarkers(data=df,~lon,~lat, popup= ~`Town.Estate`, label = ~Month.of.Launch, icon=makeIcon("House.png",iconWidth = 12, iconHeight =12), group="BTOcurrent") #%>% # image source: https://pixabay.com/vectors/house-icon-home-symbol-sign-308936/
+
+
+addLayersControl(overlayGroups=c("Schools","Parks","BTOcurrent")) #%>% addCircleMarkers(parents house)
 # image source: https://pixabay.com/vectors/house-door-f-house-facade-entry-2277025/
 ```
 ```{r}
@@ -241,4 +248,19 @@ bto <- bto %>% rename(ID=X,`Month of Launch`=`Month.of.Launch`,`Town/Estate`=`To
                       `Estimated Flats`=`Estimated.Flats`,`2-Room Flexi`=`X2.room.Flexi`,`3-Room`=`X3.room`,
                       `4-Room`=`X4.room`,`5-Room`=`X5.room`) 
 bto
+```
+
+```{r}
+
+mop <- read.csv("MOP.csv")
+mop$X <- paste0("M",mop$X)
+mop <- mop %>% rename(ID=X,`Town/Name`=`Town.Name`,`Project Name`=`BTO.Project.Name`,
+                      `Launch Date`=`Launch.Date`,`Year Completed`=`Year.of.Completion`,
+                      `Studio Units`=`No.of.Studio.units`,`2-Room Units`=`No.of.2.room.units`,
+                      `3-Room Units`=`No.of.3.room.units`,`4-Room Units`=`No.of.4.room.units`,
+                      `5-Room Units`=`No.of.5.room.units`, `3Gen Units`=`No.of.3.gen.units`,`Total Units`=`Total.no.of.units`, 
+                      `End of MOP`=`End_of_mop`) %>% subset(select=-c(idMOP))
+
+mop <- mop[,c(1,2,3,4,14,5,6,7,8,9,10,11,12,13,15,16)] %>% select(-Type,Type)
+mop
 ```
