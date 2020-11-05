@@ -31,7 +31,6 @@ resale_avail <- read.csv("Resale_Avail.csv")
 #DATA SOURCE & CLEANING ################################################################################################################################################################
 
 final_out <- read.csv("Resale_Region.csv")
-resale_avail <- read.csv("Resale_Avail.csv")
 
 bto <- read.csv("BTOPredict.csv")
 bto[6,1] <- 6
@@ -50,7 +49,9 @@ mop <- mop %>% rename(ID=X,`Town/Name`=`Town.Name`,`Project Name`=`BTO.Project.N
                       `Studio Units`=`No.of.Studio.units`,`2-Room Units`=`No.of.2.room.units`,
                       `3-Room Units`=`No.of.3.room.units`,`4-Room Units`=`No.of.4.room.units`,
                       `5-Room Units`=`No.of.5.room.units`, `3Gen Units`=`No.of.3.gen.units`,`Total Units`=`Total.no.of.units`, 
-                      `End of MOP`=`End_of_mop`) %>% subset(select=-c(idMOP)) %>% select(-Type,Type)
+                      `End of MOP`=`End_of_mop`) %>% subset(select=-c(idMOP))
+
+mop <- mop[,c(1,2,3,4,14,5,6,7,8,9,10,11,12,13,15,16)] %>% select(-Type,Type)
 
 
 # Primary schools
@@ -255,8 +256,51 @@ proximity_grant <- function(distance_from_p, with_parents, is_married, citizensh
 
 
 
+#downpayment function
+
+downpayment <- function (base_price, income, is_married, citizenship) {
+  downpayment_amt <- 0
+  
+  if (is_married == T & income <= 14000 ) {
+    downpayment_amt <- 0.1 * base_price
+   
+  }
+  else if (is_married == F & income <= 7000){
+    downpayment_amt <- 0.1 * base_price
+    
+  }
+  else {
+    downpayment_amt <- 0.2 * base_price
+    
+  }
+  return (downpayment_amt)
+}
+
+
+
+
+#loantype function
+
+loan_type <- function (base_price, income, is_married, citizenship) {
+  loan_type <- "NA"
+  
+  if (is_married == T & income <= 14000 ) {
+    loan_type <- "HDB"
+  }
+  else if (is_married == F & income <= 7000){
+    loan_type <- "HDB"
+  }
+  else {
+    loan_type <- "Bank Loan"
+  }
+  return (loan_type)
+}
+
+
+
+
 #total resale grants function
-resale_grant<- function(income, flat_type, distance_from_p, with_parents, is_married, citizenship, application){
+resale_breakdown<- function(base_price, income, flat_type, distance_from_p, with_parents, is_married, citizenship, application){
   
   f_grant <- family_grant(income, flat_type, is_married, citizenship, application)
   s_grant <- singles_grant(income, flat_type, is_married, citizenship, application)
@@ -265,27 +309,30 @@ resale_grant<- function(income, flat_type, distance_from_p, with_parents, is_mar
   p_grant <- proximity_grant(distance_from_p, with_parents, is_married, citizenship)
   single_eh_grant <- half_enhanced_housing_grant(income, is_married, citizenship, application)
   total_grant <- f_grant + s_grant + hh_grant + eh_grant + p_grant + single_eh_grant
+  downpayment_amt <- downpayment(base_price, income, is_married, citizenship)
+  loan_type <- loan_type(base_price, income, is_married, citizenship)
+ 
+  sum_of_grant <- sum(c(f_grant, s_grant, hh_grant, eh_grant, single_eh_grant, p_grant))
+  balance <- base_price - sum_of_grant - downpayment_amt
   
+  cost_breakdown <- c(balance, downpayment_amt, f_grant, s_grant, hh_grant, eh_grant, single_eh_grant, p_grant)
   
+  df <- data.frame(matrix(ncol=3,nrow=8, dimnames=list(NULL, c("total_price", "type", "amount") )))
   
-  resale_grant_breakdown <- c(f_grant, s_grant, hh_grant, eh_grant, single_eh_grant, p_grant)
+  types <- c("Balance", "Downpayment" , "Family Grant", "Singles Grant", "Half housing Grant", "Enhanced Housing Grant", "Singles Enhanced Housing Grant", "Proximity Grant")
   
-  df <- data.frame(matrix(ncol=3,nrow=6, dimnames=list(NULL, c("total_resale_grant", "grant_type", "grant_amount") )))
-  
-  grant_types <- c("Family Grant", "Singles Grant", "Half housing Grant", "Enhanced Housing Grant", "Singles Enhanced Housing Grant", "Proximity Grant")
-  
-  title <- c("Total_Resale_Grants", "Total_Resale_Grants","Total_Resale_Grants","Total_Resale_Grants","Total_Resale_Grants","Total_Resale_Grants")
+  title <- c(rep(base_price, 8))
   
   df[,1] <- title
-  df[,2] <- grant_types
-  df[,3] <- resale_grant_breakdown
+  df[,2] <- types
+  df[,3] <- cost_breakdown
   
   
-  breakdown_plot <- ggplot(df, aes(fill=grant_type, y=grant_amount, x=total_resale_grant)) + 
+  breakdown_plot <- ggplot(df, aes(fill=type, y=amount, x=total_price)) + 
     geom_bar(position="stack", stat="identity") + 
-    geom_text(aes(label = stat(y), group = total_resale_grant), stat = 'summary', fun=sum) +  #ADD THE TOTAL SUM ABOVE
-    ylab("Grant Amount (SG$)") + xlab("") + 
-    scale_fill_discrete(name = "Type of Grant") + 
+    geom_text(aes(label = stat(y), group = total_price), stat = 'summary', fun=sum) +  #ADD THE TOTAL SUM ABOVE
+    ylab("Amount (SG$)") + xlab("") + 
+    scale_fill_discrete(name = "Type") + 
     scale_y_continuous(label=comma) 
   
   breakdown <- ggplotly(breakdown_plot)
@@ -297,7 +344,8 @@ resale_grant<- function(income, flat_type, distance_from_p, with_parents, is_mar
 
 
 
-bto_grant<- function(income, is_married, citizenship, application){
+
+bto_breakdown<- function(base_price, income, is_married, citizenship, application){
   eh_grant <- 0
   single_eh_grant <- 0
   if(is_married == T & citizenship == "SC,SC" & application == "FT,FT"){
@@ -317,51 +365,40 @@ bto_grant<- function(income, is_married, citizenship, application){
     single_eh_grant <- half_enhanced_housing_grant(income, is_married, citizenship, application)
   } 
   
-  bto_grants_breakdown<- c(eh_grant, single_eh_grant)
   
-  df <- data.frame(matrix(ncol=3,nrow=2, dimnames=list(NULL, c("total_bto_grant", "grant_type", "grant_amount") )))
+  downpayment_amt <- downpayment(base_price, income, is_married, citizenship)
+  loan_type <- loan_type(base_price, income, is_married, citizenship)
+  sum_of_grant <- sum(c(eh_grant, single_eh_grant))
+  balance <- base_price - sum_of_grant - downpayment_amt
   
-  grant_types <- c("Enhanced Housing Grant", "Singles Enhanced Housing Grant")
+  bto_cost_breakdown<- c(balance, downpayment_amt, eh_grant, single_eh_grant)
   
-  title <- c("Total_BTO_Grants", "Total_BTO_Grants")
+  df <- data.frame(matrix(ncol=3,nrow=4, dimnames=list(NULL, c("total_price", "type", "amount") )))
+  
+ types <- c("Balance", "Downpayment", "Enhanced Housing Grant", "Singles Enhanced Housing Grant")
+  
+  title <- c(rep(base_price, 4))
   
   df[,1] <- title
-  df[,2] <- grant_types
-  df[,3] <- bto_grants_breakdown
+  df[,2] <- types
+  df[,3] <- bto_cost_breakdown
   
   
-  breakdown_plot <- ggplot(df, aes(fill=grant_type, y=grant_amount, x=total_bto_grant)) + 
-    geom_bar(position="stack", stat="identity") + ylab("Grant Amount (SG$)") + xlab("") + scale_fill_discrete(name = "Type of Grant") + geom_text(aes(label = stat(y), group = total_bto_grant), stat = 'summary', fun=sum)
+  breakdown_plot <- ggplot(df, aes(fill=type, y=amount, x=total_price)) + 
+    geom_bar(position="stack", stat="identity") + 
+    geom_text(aes(label = stat(y), group = total_price), stat = 'summary', fun=sum) +  #ADD THE TOTAL SUM ABOVE
+    ylab("Amount (SG$)") + xlab("") + 
+    scale_fill_discrete(name = "Type") + 
+    scale_y_continuous(label=comma) 
   
   breakdown <- ggplotly(breakdown_plot)
   
   return(breakdown)
   
   
-  
-  
+
 }
 
-
-#downpayment logic
-
-downpayment <- function (base_price, income, is_married, citizenship) {
-  downpayment_amt <- 0
-  
-  if (is_married == T & income <= 14000 ) {
-    downpayment_amt <- 0.1 * base_price
-    loan_type <- "HDB"
-  }
-  else if (is_married == F & income <= 7000){
-    downpayment_amt <- 0.1 * base_price
-    loan_type <- "HDB"
-  }
-  else {
-    downpayment_amt <- 0.2 * base_price
-    loan_type <- "Bank Loan"
-  }
-  return (c(downpayment_amt, loan_type))
-}
 
 
 
@@ -663,15 +700,20 @@ ui <- fluidPage(theme=shinytheme("sandstone"),HTML(html_fix),navbarPage(title = 
                                                                       withSpinner(leafletOutput(outputId = "map")),
                                                                       hr(),
                                                                       fluidRow(column(7,
-                                                                                      helpText("Tip: Click Resale/Soon-to-MOP locations to 
+                                                                                      helpText("Click on housing locations to 
                                                  populate table below with information on houses 
                                                  in that block")
-                                                                      ),
+                                                                      ), 
+                                                                      column(7,  
+                                                                             helpText("Note that MOP houses will
+                                                 only be on the resale market after certain number 
+                                                 of years, with about 60% estimated to be available"))
                                                                       ),
                                                                       br(),
                                                                       fluidRow(
                                                                         withSpinner(dataTableOutput(outputId = "PropertyFinder")),
-                                                                      )))),
+                                                                      )
+                                                                    ))),
                            
                                                          # ----------------------------------
                                                          # tab panel 3 
@@ -831,8 +873,8 @@ server <- function(input, output,session){
   
   output$price_grant_barchart_1 <- renderPlotly( {
     
-    
-    resale_grant(input$NetIncome, 
+    resale_breakdown(400000,
+                input$NetIncome, 
                  input$flat_type_1, 
                  measure_distance_from_p(input$parent_address, (find_lonlat(input$home_type_1))), 
                  (input$with_parents == "Yes"), 
@@ -841,24 +883,44 @@ server <- function(input, output,session){
                  input$FTST)
     
   }
-    
-    
-  )
-  
-  output$price_grant_barchart_2 <- renderPlotly( {
-  resale_grant(input$NetIncome, 
-               input$flat_type_2, 
-               measure_distance_from_p(input$parent_address, (find_lonlat(input$home_type_2))), 
-               (input$with_parents == "Yes"), 
-               (input$marital_status == "Married") , 
-               input$Nationality, 
-               input$FTST)
-
-  }
+    )
   
 
-  )
+  
+  output$price_grant_barchart_2 <- 
+    renderPlotly( {
+        resale_breakdown(400000,
+                         input$NetIncome, 
+                         input$flat_type_2, 
+                         measure_distance_from_p(input$parent_address, (find_lonlat(input$home_type_2))), 
+                         (input$with_parents == "Yes"), 
+                         (input$marital_status == "Married") ,
+                         input$Nationality, 
+                         input$FTST)
+        
+      }
+      )
+      
+  
+      
+ 
+      
+
+
   # Base map with layers
+  html_legend <- "<img src='https://cdn.pixabay.com/photo/2018/02/18/20/34/locomotive-3163448_1280.png'style='width:10px;height:10px;'>MRT<br/>
+
+<img src='https://cdn.pixabay.com/photo/2014/12/22/00/07/tree-576847_1280.png'style='width:10px;height:10px;'>Park<br/>
+
+<img src='https://cdn.pixabay.com/photo/2017/01/31/00/09/book-2022464_1280.png'style='width:10px;height:10px;'>School<br/>
+
+<img src='https://cdn.pixabay.com/photo/2016/08/31/11/54/user-1633249_1280.png'style='width:10px;height:10px;'>Community Centre<br/>
+
+<img src='https://cdn.pixabay.com/photo/2020/06/22/10/55/house-5328786_1280.png'style='width:10px;height:10px;'>BTO<br/>
+
+<img src='https://cdn.pixabay.com/photo/2020/07/19/18/23/real-estate-5420920_1280.png'style='width:10px;height:10px;'>Resale<br/>
+
+<img src='https://cdn.pixabay.com/photo/2013/07/12/12/56/home-146585_1280.png 'style='width:10px;height:10px;'>MOP Soon<br/>"
   output$map <- renderLeaflet(
     {
       leaflet() %>% 
@@ -872,7 +934,8 @@ server <- function(input, output,session){
                    icon=makeIcon("CCs.png",iconWidth = 12, iconHeight =12), group="Community Centres") %>%
         addMarkers(data=mrt, popup = ~final, label = ~final, 
                    icon=makeIcon("Train.png",iconWidth = 12, iconHeight =12), group="MRTs") %>%
-        addLayersControl(overlayGroups=c("Primary Schools","Parks","Community Centres","MRTs"))
+        addLayersControl(overlayGroups=c("Primary Schools","Parks","Community Centres","MRTs")) %>%
+        addControl(html=html_legend,position = "bottomright")
     })
   
   # Set view to area
@@ -945,7 +1008,8 @@ server <- function(input, output,session){
     {
       leafletProxy("map") %>%
         clearGroup("BTO") %>%
-        addMarkers(data=BTO(),~lon,~lat,popup = ~`Town/Estate`, group="BTO", layerId=~`Town/Estate`)  
+        addMarkers(data=BTO(),~lon,~lat,popup = ~`Town/Estate`, group="BTO", 
+                   icon=makeIcon("BTO.png",iconWidth=30, iconHeight=30),layerId=~`Town/Estate`)  
     }
   })
   
@@ -968,7 +1032,8 @@ server <- function(input, output,session){
     {
       leafletProxy("map") %>%
         clearGroup("Resale") %>% 
-        addMarkers(data=Resale(),~lon,~lat,group="Resale", layerId=~Address)
+        addMarkers(data=Resale(),~lon,~lat,group="Resale", 
+                   icon=makeIcon("Resale.png",iconWidth=30, iconHeight=30),layerId=~Address)
     }
   })
   
@@ -990,7 +1055,8 @@ server <- function(input, output,session){
     {
       leafletProxy("map") %>%
         clearGroup("MOP") %>%
-        addMarkers(data=MOP(),~lon,~lat,group="MOP", layerId=~`Project Name`)
+        addMarkers(data=MOP(),~lon,~lat,group="MOP", 
+                   icon=makeIcon("MOP.png",iconWidth=30, iconHeight=30),layerId=~`Project Name`)
     }
   })
   
