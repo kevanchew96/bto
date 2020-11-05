@@ -194,6 +194,19 @@ ui <- fluidPage(
 server <- function(input, output) 
 {
   # Base map with layers
+  html_legend <- "<img src='https://cdn.pixabay.com/photo/2018/02/18/20/34/locomotive-3163448_1280.png'style='width:10px;height:10px;'>MRT<br/>
+
+<img src='https://cdn.pixabay.com/photo/2014/12/22/00/07/tree-576847_1280.png'style='width:10px;height:10px;'>Park<br/>
+
+<img src='https://cdn.pixabay.com/photo/2017/01/31/00/09/book-2022464_1280.png'style='width:10px;height:10px;'>School<br/>
+
+<img src='https://cdn.pixabay.com/photo/2016/08/31/11/54/user-1633249_1280.png'style='width:10px;height:10px;'>Community Centre<br/>
+
+<img src='https://cdn.pixabay.com/photo/2020/06/22/10/55/house-5328786_1280.png'style='width:10px;height:10px;'>BTO<br/>
+
+<img src='https://cdn.pixabay.com/photo/2020/07/19/18/23/real-estate-5420920_1280.png'style='width:10px;height:10px;'>Resale<br/>
+
+<img src='https://cdn.pixabay.com/photo/2013/07/12/12/56/home-146585_1280.png 'style='width:10px;height:10px;'>MOP Soon<br/>"
   output$map <- renderLeaflet(
   {
     leaflet() %>% 
@@ -207,7 +220,8 @@ server <- function(input, output)
                  icon=makeIcon("CCs.png",iconWidth = 12, iconHeight =12), group="Community Centres") %>%
       addMarkers(data=mrt, popup = ~final, label = ~final, 
                  icon=makeIcon("Train.png",iconWidth = 12, iconHeight =12), group="MRTs") %>%
-      addLayersControl(overlayGroups=c("Primary Schools","Parks","Community Centres","MRTs")) 
+      addLayersControl(overlayGroups=c("Primary Schools","Parks","Community Centres","MRTs")) %>%
+      addControl(html=html_legend,position = "bottomright")
   })
   
   # Set view to area
@@ -280,7 +294,8 @@ server <- function(input, output)
     {
       leafletProxy("map") %>%
         clearGroup("BTO") %>%
-        addMarkers(data=BTO(),~lon,~lat,popup = ~`Town/Estate`, group="BTO", layerId=~`Town/Estate`)  
+        addMarkers(data=BTO(),~lon,~lat,popup = ~`Town/Estate`, group="BTO", 
+                   icon=makeIcon("BTO.png",iconWidth=30, iconHeight=30),layerId=~`Town/Estate`)  
     }
   })
   
@@ -303,7 +318,8 @@ server <- function(input, output)
     {
       leafletProxy("map") %>%
         clearGroup("Resale") %>% 
-        addMarkers(data=Resale(),~lon,~lat,group="Resale", layerId=~Address)
+        addMarkers(data=Resale(),~lon,~lat,group="Resale", 
+                   icon=makeIcon("Resale.png",iconWidth=30, iconHeight=30),layerId=~Address)
     }
   })
   
@@ -325,7 +341,8 @@ server <- function(input, output)
     {
       leafletProxy("map") %>%
         clearGroup("MOP") %>%
-        addMarkers(data=MOP(),~lon,~lat,group="MOP", layerId=~`Project Name`)
+        addMarkers(data=MOP(),~lon,~lat,group="MOP", 
+                   icon=makeIcon("MOP.png",iconWidth=30, iconHeight=30),layerId=~`Project Name`)
     }
   })
   
