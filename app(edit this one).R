@@ -23,12 +23,12 @@ ggmap::register_google(key = 'AIzaSyBtkpz6CUH-lwaRTLrfnBbGPpaj4pst6Z8')
 
 key <- "AIzaSyBtkpz6CUH-lwaRTLrfnBbGPpaj4pst6Z8"
 set_key(key = key)
+final_out <- read.csv("Resale_Region.csv")
+resale_avail <- read.csv("Resale_Avail.csv")
+
 
 ##############################################################################################################################################################################
 #DATA SOURCE & CLEANING ################################################################################################################################################################
-
-final_out <- read.csv("Resale_Region.csv")
-resale_avail <- read.csv("Resale_Avail.csv")
 
 
 bto <- read.csv("BTOPredict.csv")
@@ -512,14 +512,14 @@ plot_polygon <- function(data,room_type){
   
   shapeData <- readOGR(dsn="C:\\Users\\jeanl\\Documents\\GitHub\\bto",layer="districts")
   data_plot <- merge(shapeData,data_out,by.x="PLN_AREA_N",by.y="Postal_District")
-  
+
   popup <- paste0("<b>","District: ","</b>",data_plot$PLN_AREA_N,"<br/>",
                   "<b>","General Location: ","</b>",data_plot$Gnrl_Lc,"<br/>",
                   "<b>", "Average Price: ", "</b>", round(data_plot$Average_Price,digits=2))
   
   
   pal <- colorNumeric( palette = "PuRd", domain = data_plot$Average_Price)
-  
+
   m <-leaflet(data = data_plot) %>% addTiles() %>% addPolygons(data=data_plot, weight = 1, stroke = TRUE, color="grey", smoothFactor = 0.5, fillOpacity = 0.8, fillColor = ~pal(data_plot$Average_Price),
                                                                popup = popup, dashArray = "") %>% addLegend("bottomright", pal = pal, values = ~Average_Price,labFormat = labelFormat(prefix = "$")) %>% setView(103.851245,1.3445821
 ,zoom = 10.5)
@@ -536,13 +536,12 @@ plot_polygon2 <- function(data,room_type){
                   "<b>","General Location: ","</b>",data_plot$Gnrl_Lc,"<br/>",
                   "<b>", "Number Of Units Available: ", "</b>", data_plot$Availability)
   
-  
   pal <- colorNumeric( palette = "YlGn", domain = data_plot$Availability)
   
   m <-leaflet(data = data_plot) %>% addTiles() %>% addPolygons(data=data_plot, weight = 1, stroke = TRUE, color="grey", smoothFactor = 0.5, fillOpacity = 0.8, fillColor = ~pal(data_plot$Availability),
                                                                popup = popup, dashArray = "") %>% addLegend("bottomright", pal = pal, values = ~Availability) %>% setView(103.851245,1.3445821
                                                                                                                                                                           ,zoom = 10.5)
-  
+
   m <- m %>% htmlwidgets::prependContent(html_fix)                   # Insert into leaflet HTML code
   m
 }
@@ -557,7 +556,7 @@ OverviewPrices <- function(){
           p("Click on the specific district on the map for more information"),
       )),
     sidebarPanel(width=3,
-                 radioButtons("leaflet_type","Data Shown",c("Average Price","Total Availability"))
+                 radioButtons("leaflet_type","Data Shown",c("Average Price","Availability"))
     ),
     mainPanel(
       
@@ -565,6 +564,7 @@ OverviewPrices <- function(){
       tags$div(style="margin-top:20px;",
         p("Want to explore the housing options and facilities available in each district?")),
       actionButton(inputId = "bttn1",label= "Go to Housing View")
+      
     )
   )
 }
@@ -583,8 +583,14 @@ font-size: 15px;
 ###################################################################################################################################################################
 ############   UI STARTS HERE   ###################################################################################################################################
 
-ui <- fluidPage(theme=shinytheme("sandstone"),navbarPage(title = "AppName",id="navbar",
-                                                         fluid = TRUE, 
+
+
+
+#To format legend for polygon leaflets 
+css_fix <- "div.info.legend.leaflet-control br {clear: both;}"
+html_fix <- as.character(htmltools::tags$style(type = "text/css", css_fix))
+
+ui <- fluidPage(theme=shinytheme("sandstone"),HTML(html_fix),navbarPage(title = "AppName", id="navbar",fluid = TRUE, 
                                                          collapsible = TRUE,
                                                          
                                                          # ----------------------------------
@@ -599,12 +605,15 @@ ui <- fluidPage(theme=shinytheme("sandstone"),navbarPage(title = "AppName",id="n
                                                                               type = "image/png", 
                                                                               href = "images/logo_icon.png")
                                                                   ),
+
                                                                   OverviewPrices() #function to display overview of prices on polygons
                                                          ),
                                                          
                                                          # ----------------------------------
                                                          # tab panel 2 
-                                                         tabPanel("Housing View", value = "housingview", fluid = TRUE, tags$style(button_color_css),
+
+                                                        
+                                                         tabPanel("Housing View", value = "housingview",fluid = TRUE, tags$style(button_color_css),
                                                                   sidebarLayout(
                                                                     sidebarPanel(
                                                                       
@@ -769,7 +778,7 @@ server <- function(input, output,session){
                     tabPanel("Multi-Generation", leafletOutput("leaflet6"))
         )
       )
-    } else if (input$leaflet_type == "Total Availability") {
+    } else if (input$leaflet_type == "Availability") {
       fluidPage(
         tabsetPanel(type = "tabs",
                     tabPanel("2-Room", leafletOutput("leaflet_avail_1")),
