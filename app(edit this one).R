@@ -665,19 +665,21 @@ ui <- fluidPage(theme=shinytheme("sandstone"),HTML(html_fix),navbarPage(title = 
                                                                                                    choices = c("None Selected","A", "B")),
                                                                                       
                                                                                       
-                                                                                      # Select which Housing Type(s) to plot
-                                                                                      checkboxGroupInput(inputId = "HousingType",
-                                                                                                         label = "Select Housing Type(s):",
-                                                                                                         choices = c("BTO" = "BTO", 
-                                                                                                                     "Resale" = "Resale",
-                                                                                                                     "BTO reaching MOP soon" = "MOP"),
-                                                                                                         selected = "BTO"),
+                                                                                      # Select which Housing Type to plot
+                                                                                      radioButtons(inputId = "HousingType",
+                                                                                                   label = "Select Housing Type:",
+                                                                                                   choices = c("BTO" = "BTO", 
+                                                                                                               "Resale" = "Resale",
+                                                                                                               "BTO reaching MOP soon" = "MOP"),
+                                                                                                   selected = "BTO"),
+                                                                                      actionButton("goButton", "Go!"),
                                                                                       # Select which Type of Room(s) to plot   
-                                                                                      checkboxGroupInput(inputId = "RoomType",
-                                                                                                         label = "Select Type of Room(s) for Resale:",
-                                                                                                         choices = c("2-Room", "3-Room", "4-Room",
-                                                                                                                     "5-Room"),
-                                                                                                         selected = "2-Room")
+                                                                                      radioButtons(inputId = "RoomType",
+                                                                                                   label = "Select Type of Room for Resale:",
+                                                                                                   choices = c("2-Room", "3-Room", "4-Room",
+                                                                                                               "5-Room"),
+                                                                                                   selected = "2-Room"),
+                                                                                      actionButton("goButton2", "Go!")
                                                                       )),
                                                                       
                                                                       fluidRow(column(12,
