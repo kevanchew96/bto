@@ -18,6 +18,7 @@ library(tidyr)
 library(dplyr)
 library(DT)
 library(geosphere)
+library(htmltools)
 library(htmlwidgets)
 ggmap::register_google(key = 'AIzaSyBtkpz6CUH-lwaRTLrfnBbGPpaj4pst6Z8')
 
@@ -30,69 +31,43 @@ resale_avail <- read.csv("Resale_Avail.csv")
 ##############################################################################################################################################################################
 #DATA SOURCE & CLEANING ################################################################################################################################################################
 
-
 bto <- read.csv("BTO_new.csv")
 bto <- bto %>% rename(`Month of Launch`=`Month.of.Launch`,`Town/Estate`=`Town.Estate`,
                       `Estimated Flats`=`Estimated.Flats`,`Flat Type`=flat_type,
-                      `Price (Estimated)`=price) %>% 
+                      `Estimated Price`=price) %>% 
   select(ID, `Month of Launch`, `Town/Estate`, `Flat Type`, `Estimated Flats`, 
-         `Price (Estimated)`, lon, lat, Type)
+         `Estimated Price`, lon, lat, Type)
 
 resale <- read.csv("Resale_coords.csv") 
 resale <- distinct(resale %>% subset(select = -c(`X.1`,X)))
 resale$ID<- paste0("R",seq(1:nrow(resale)))
 resale$Price <- (gsub("[\\$,]", "", resale$Price))
-
-mop <- read.csv("MOP.csv")
-mop$X <- paste0("M",mop$X)
-mop <- mop %>% rename(ID=X,`Town/Name`=`Town.Name`,`Project Name`=`BTO.Project.Name`,
-                      `Launch Date`=`Launch.Date`,`Year Completed`=`Year.of.Completion`,
-                      `Studio Units`=`No.of.Studio.units`,`2-Room Units`=`No.of.2.room.units`,
-                      `3-Room Units`=`No.of.3.room.units`,`4-Room Units`=`No.of.4.room.units`,
-                      `5-Room Units`=`No.of.5.room.units`, `3Gen Units`=`No.of.3.gen.units`,`Total Units`=`Total.no.of.units`, 
-                      `End of MOP`=`End_of_mop`) %>% subset(select=-c(idMOP))
-
-mop <- mop[,c(1,2,3,4,14,5,6,7,8,9,10,11,12,13,15,16)] %>% select(-Type,Type)
-
-predicted_data <- read_csv("predicted_price.csv")
-
-mop2 <- mop %>% gather(key = "flat_type", value = "num_of_units", c("Studio Units", "2-Room Units", "3-Room Units","4-Room Units", "5-Room Units", "3Gen Units" ))
-mop2$flat_type <- gsub(" Units", "", mop2$flat_type)
-mop2$flat_type <- gsub("Room", "ROOM", mop2$flat_type)
-mop2$flat_type <- gsub("-", " ", mop2$flat_type)
-mop2$flat_type <- gsub("3Gen", "EXECUTIVE", mop2$flat_type)
-mop2$town <- toupper(mop2$`Town/Name`)
-
-
-predicted_data_temp1 <- predicted_data[, c("town", "flat_type", "price1")]
-predicted_data_final <- predicted_data_temp1 %>% group_by(town, flat_type) %>% summarise(price1= mean(price1))
-
-mop <- merge.data.frame(x= mop2, y= predicted_data_final, by = c('flat_type', 'town'), all.x = TRUE) 
-
-
-
 resale <- resale %>% select(ID,everything())
+resale$Year <- gsub("Built-", "", resale$Year)
+resale <- resale %>% rename(`Flat Type`=Room, `Year Built`=Year)
+resale$Area <- gsub("[(Built)]","",resale$Area)
+
 
 mop <- read.csv("MOP_new.csv")
 mop <- mop %>% rename(`Town/Name`=`Town.Name`,`Project Name`=`Project.Name`,
                       `Launch Date`=`Launch.Date`,`Year Completed/ Year to be Complete`=`Year.Completed`,
                       `No. of Units`=`Total.Units`, `Flat Type`=flat_type,
-                      `End of MOP`=`End.of.MOP`, `Price (Predicted)`=price1) %>% 
+                      `End of MOP`=`End.of.MOP`, `Predicted Price`=price1) %>% 
   select(ID, `Town/Name`, `Project Name`, `End of MOP`, `Flat Type`, 
-         `Year Completed/ Year to be Complete`, `Price (Predicted)`, `No. of Units`,lon, lat, Type)
+         `Year Completed/ Year to be Complete`, `Predicted Price`, `No. of Units`,lon, lat, Type)
 mop$`Flat Type` <- gsub("EXECUTIVE", "Executive", mop$`Flat Type`)
 
 
-mop <- mop[!is.na(mop$`Price (Predicted)`),]
-mop$`Price (Predicted)` <- round(mop$`Price (Predicted)`)
+mop <- mop[!is.na(mop$`Predicted Price`),]
+mop$`Predicted Price` <- round(mop$`Predicted Price`)
 
-bto <- read.csv("BTO_new.csv")
-names(bto)[3] <- "Town/Estate"
-
-
+districts <- read.csv("Districts.csv")
+districts$Combined <- paste0(districts$Postal.District," - ", districts$General.Area)
+districts$Combined <- gsub(", Singapore", "",districts$Combined)
 
 # Primary schools
 schools <- read.csv("Primary Schools.csv")
+schools <- schools[order(schools$Schools),]
 
 # Parks
 parks <- file.path(getwd(), 'parks-kml.kml')   
@@ -767,21 +742,26 @@ ui <- fluidPage(HTML(html_fix),theme = "style/style.css",
                                                                   tagList(
                                                                     div(class = "container",style="margin-bottom:50px;",
                                                                         h1("Housing View", class = "title fit-h1"),
-                                                                        p("Using the controls on the left, select your preferred housing district. 
-                                                                          You may then proceed to select the housing and flat type of your interest. 
-                                                                          Markers will be shown on the map for housing options that match your selections. 
-                                                                          Facilities nearby will also be shown. 
-                                                                          You can click on the markers for more information on the housing options and facilities."),
-                                                                        p("If you are intending to find a flat near your parents' house, enter your parents' address on the left panel.
-                                                                          Housing options within 2km radius of your parents' house will be highlighted.")
+                                                                        p(HTML(paste0("Find your desired HDB in 5 quick steps:", "<br/>",
+                                                                          "1. Select your desired housing district", "<br/>",
+                                                                          "2. Select the type of housing and the relevant flat type, then click 'Go!'", "<br/>",
+                                                                          "3. Mouse over the icons on the map to see more details", "<br/>",
+                                                                          "4. (Optional) Enter your parents' address/desired primary school for your children to view an area around them", "<br/>",
+                                                                          "5. Take note of the IDs of any properties that catch your eye"
+                                                                          ))),
+                                                                        
                                                                     )
                                                                   ),
                                                                   sidebarLayout(
                                                                     sidebarPanel(
                                                                       
-                                                                      titlePanel("Choose Characteristics"),
+                                                                      titlePanel("Housing Type"),
                                                                       fluidRow(column(12,
-                                                                                      
+                                                                                      selectizeInput(inputId = "AreaView",
+                                                                                                  label = "Select Area to View:",
+                                                                                                  choices = districts$Combined,
+                                                                                                  selected = districts$Combined[1]),
+                                                                                      actionButton(inputId = "goButton", label = "View"),
                                                                                       radioButtons(inputId = "HousingType",
                                                                                                    label = "Select Housing Type:",
                                                                                                    choices = c("BTO" = "BTO", 
@@ -792,8 +772,8 @@ ui <- fluidPage(HTML(html_fix),theme = "style/style.css",
                                                                                         condition = "input.HousingType == 'Resale'",
                                                                                         radioButtons(inputId = "RoomType",
                                                                                                      label = "Select Type of Room for Resale:",
-                                                                                                     choices = c("2-Room", "3-Room", "4-Room",
-                                                                                                                 "5-Room"),
+                                                                                                     choices = c("1-Room", "2-Room", "3-Room", "4-Room",
+                                                                                                                 "5-Room", "Executive", "Multi-Gen/Jumbo"), 
                                                                                                      selected = "2-Room")),
                                                                                       conditionalPanel(
                                                                                         condition = "input.HousingType == 'MOP'",
@@ -802,13 +782,14 @@ ui <- fluidPage(HTML(html_fix),theme = "style/style.css",
                                                                                                      choices = c("2-Room", "3-Room", "4-Room",
                                                                                                                  "5-Room", "Executive"),
                                                                                                      selected = "2-Room")),
-                                                                                      actionButton("goButton", "Go!"),
+                                                                                      actionButton(inputId = "goButton2", label = "Go!"),
                                                                       )),
                                                                       
                                                                       fluidRow(column(12,
-                                                                                      helpText("Fill in parents' address (Multiple addresses can be filled, showing
-                                               2km each point)"))
+                                                                                      helpText("Fill in parents' address")),
+                                                                               
                                                                       ),
+                                                                    
                                                                       textInput(inputId = "parents_address", label = "Parents' Address")
                                                                       ,textOutput(outputId = "parents_full_address")
                                                                       ,HTML(paste0(" <script> 
@@ -853,35 +834,54 @@ ui <- fluidPage(HTML(html_fix),theme = "style/style.css",
                  <script src='https://maps.googleapis.com/maps/api/js?key=", key,
                                                                                    "&libraries=places&callback=initAutocomplete' async defer></script>")
                                                                       ),
+                                                                      actionButton(inputId = "goButton3", label = "Show"),
                                                                       
                                                                       conditionalPanel(
                                                                         condition = "output.parents_full_address",
-                                                                        actionButton(inputId = "FinderClear", label = "Clear Address(es)"))
-                                                                      
+                                                                        actionButton(inputId = "FinderClear", label = "Clear Address(es)")),
+                                                                    
+                                                                    fluidRow(column(12,
+                                                                                    helpText("Fill in school you would like to view"))),
+                                                                    
+                                                                    selectizeInput(inputId = "SelectSchool",
+                                                                                label = "Select school:",
+                                                                                choices = schools$Schools,
+                                                                                selected = schools$Schools[1]),
+                                                                    fluidRow(column(12,
+                                                                                    helpText("Which distance (1 or 2km) would you like to view?"))
                                                                     ),
+                                                                    
+                                                                    selectInput(inputId = "SchoolDist",
+                                                                                label = "Select distance (km):",
+                                                                                choices = c(1, 2),
+                                                                                selected = 1),
+                                                                             
+                                                                    actionButton(inputId = "goButton4", label = "View")),
+                                                                    
                                                                     mainPanel(
                                                                       withSpinner(leafletOutput(outputId = "map")),
                                                                       hr(),
-                                                                      fluidRow(column(7,
+                                                                      fluidRow(column(12,
                                                                                       helpText("Click on housing locations to 
-                                                 populate table below with information on houses 
-                                                 in that block")
+                                                 see detailed information about them below")
                                                                       ), 
-                                                                      column(7,  
+                                                                      column(12,
+                                                                             helpText("Tip: You may toggle on/off non-housing markers using the UI at the top right")),
+                                                                      column(12,  
                                                                              helpText("Note that MOP houses will
-                                                 only be on the resale market after certain number 
-                                                 of years, with about 60% estimated to be available"))
+                                                 only be on the resale market after a certain number 
+                                                 of years (indicated by End of MOP), with about 60% estimated to be available"))
                                                                       ),
                                                                       br(),
                                                                       fluidRow(
                                                                         withSpinner(dataTableOutput(outputId = "PropertyFinder")),
                                                                       ),
                                                                       tags$div(style="margin-top:20px;",
-                                                                               p("Want to compare costs and grants available for your preferred housing?")),
+                                                                               p("Have you noted down the IDs of your desired properties? If yes, then you are ready to proceed to Finance Planning!")),
                                                                       tags$div(style="margin-bottom:10px;",
                                                                       actionButton(inputId = "bttn2",label= "Go to Finance Planning"))
                                                                       
-                                                            
+                                                                      
                                                                     ))),
                            
                                                          # ----------------------------------
@@ -1081,61 +1081,54 @@ server <- function(input, output,session){
         
       }
       )
-    
-    
-    
-    
-    
-    
      })
-  
-  
-  
-  
-  
-  
-
-
-  
-
-      
-
 
   # Base map with layers
-  html_legend <- "<img src='https://cdn.pixabay.com/photo/2018/02/18/20/34/locomotive-3163448_1280.png'style='width:10px;height:10px;'>MRT<br/>
+html_legend <- "<img src='https://www.flaticon.com/svg/static/icons/svg/2987/2987903.svg'style='width:10px;height:10px;'>&nbsp Primary School<br/>
 
-<img src='https://cdn.pixabay.com/photo/2014/12/22/00/07/tree-576847_1280.png'style='width:10px;height:10px;'>Park<br/>
+<img src='https://www.flaticon.com/svg/static/icons/svg/3104/3104941.svg'style='width:10px;height:10px;'>&nbsp Park<br/>
 
-<img src='https://cdn.pixabay.com/photo/2017/01/31/00/09/book-2022464_1280.png'style='width:10px;height:10px;'>School<br/>
+<img src='https://www.flaticon.com/svg/static/icons/svg/1189/1189136.svg'style='width:10px;height:10px;'>&nbsp Community Centre<br/>
 
-<img src='https://cdn.pixabay.com/photo/2016/08/31/11/54/user-1633249_1280.png'style='width:10px;height:10px;'>Community Centre<br/>
+<img src='https://www.flaticon.com/svg/static/icons/svg/821/821354.svg'style='width:10px;height:10px;'>&nbsp MRT<br/>
 
-<img src='https://cdn.pixabay.com/photo/2020/06/22/10/55/house-5328786_1280.png'style='width:10px;height:10px;'>BTO<br/>
+<img src='https://www.flaticon.com/svg/static/icons/svg/2451/2451622.svg'style='width:10px;height:10px;'>&nbsp BTO<br/>
 
-<img src='https://cdn.pixabay.com/photo/2020/07/19/18/23/real-estate-5420920_1280.png'style='width:10px;height:10px;'>Resale<br/>
+<img src='https://www.flaticon.com/svg/static/icons/svg/3523/3523344.svg'style='width:10px;height:10px;'>&nbsp Resale<br/>
 
-<img src='https://cdn.pixabay.com/photo/2013/07/12/12/56/home-146585_1280.png 'style='width:10px;height:10px;'>MOP Soon<br/>"
+<img src='https://www.flaticon.com/svg/static/icons/svg/3523/3523064.svg'style='width:10px;height:10px;'>&nbsp MOP Soon<br/>"
   output$map <- renderLeaflet(
     {
       leaflet() %>% 
         addTiles() %>%  
         setView(lng = 103.803214, lat = 1.368063, zoom = 11) %>% 
-        addMarkers(data=schools, ~lon, ~lat,popup= ~Schools, label = ~Schools,
-                   icon=makeIcon("School.png",iconWidth = 12, iconHeight =12), group="Primary Schools") %>% 
-        addMarkers(data=parks, popup = ~Description, label = ~Description, 
-                   icon=makeIcon("Tree.png",iconWidth = 12, iconHeight =12), group="Parks") %>%
-        addMarkers(data=ccs, popup = ~Description, label = ~Description, 
-                   icon=makeIcon("CCs.png",iconWidth = 12, iconHeight =12), group="Community Centres") %>%
-        addMarkers(data=mrt, popup = ~final, label = ~final, 
-                   icon=makeIcon("Train.png",iconWidth = 12, iconHeight =12), group="MRTs") %>%
+        addMarkers(data=schools, ~lon, ~lat,label = ~Schools,
+                   icon=makeIcon("School.png",iconWidth=25, iconHeight=25), group="Primary Schools") %>% 
+        addMarkers(data=parks, label = ~Description,  
+                   icon=makeIcon("Park.png",iconWidth=25, iconHeight=25), group="Parks") %>%
+        addMarkers(data=ccs, label = ~Description, 
+                   icon=makeIcon("CCs.png",iconWidth=25, iconHeight=25), group="Community Centres") %>%
+        addMarkers(data=mrt, label = ~final,
+                   icon=makeIcon("Train.png",iconWidth=25, iconHeight=25), group="MRTs") %>%
         addLayersControl(overlayGroups=c("Primary Schools","Parks","Community Centres","MRTs")) %>%
         addControl(html=html_legend,position = "bottomright")
     })
   
   # Set view to area
-  observeEvent(input$AreaView,{
-    leafletProxy("map") #%>%
-    #setView()
+  observeEvent(input$goButton,{
+    districts <- districts %>% filter(Combined==input$AreaView)
+    leafletProxy("map") %>%
+      setView(lng=districts[1,4],lat=districts[1,5],zoom=15)
+  })
+  
+  # Plot area around school
+  observeEvent(input$goButton4,{
+    schools <- schools %>% filter(Schools==input$SelectSchool)
+    leafletProxy("map") %>%
+      removeShape("sch") %>%
+      setView(lng=schools[1,3],lat=schools[1,4],zoom=15) %>%
+      addCircles(data=schools,lng=~lon,lat=~lat, color = "red",
+                 radius=(as.integer(input$SchoolDist)*1000),fillOpacity=0.1, layerId="sch")
   })
   
   
@@ -1159,7 +1152,7 @@ server <- function(input, output,session){
   })
   
   # Parents' address plot
-  observe({
+  observeEvent(input$goButton3,{
     parents_address <- parents_address()
     if(length(parents_address>0))
     {
@@ -1167,7 +1160,7 @@ server <- function(input, output,session){
       coords <- geocode_coordinates(address)  
       leafletProxy("map") %>% 
         addCircles(data=coords,~lng,~lat,radius=2000,fillOpacity=0.1, layerId="x") %>% 
-        addMarkers(data=coords,~lng,~lat,popup=parents_address, label="Your Parents' House",
+        addMarkers(data=coords,~lng,~lat, label="Your Parents' House",
                    icon=makeIcon("Parents' House.png",iconWidth=12, iconHeight=12),layerId="y")
     }
     else
@@ -1187,21 +1180,50 @@ server <- function(input, output,session){
   })
   
   # Plot houses on leaflet output
-  observeEvent(input$goButton, {
+  observeEvent(input$goButton2, {
     type <- input$HousingType
     bto <- filter(bto, Type %in% type) 
-    resale <- filter(resale, Type %in% type) %>% filter(Room %in% input$RoomType)
+    resale <- filter(resale, Type %in% type) %>% filter(`Flat Type` %in% input$RoomType)
     mop <- filter(mop, Type %in% type) %>% filter(`Flat Type` %in% input$RoomType2)
+    
+    labsbto <- lapply(seq(nrow(bto)), function(i) {
+      paste0( "Type: ", bto[i, "Type"], "<br>",
+              "ID: ", bto[i, "ID"], "<br>",
+              "Month of Launch: ", bto[i, "Month of Launch"], "<br>",
+              "Town/Estate: ", bto[i, "Town/Estate"], "<br>",
+              "Estimated Flats: ", bto[i, "Estimated Flats"], "<br>",
+              "Estimated Price: ", bto[i, "Estimated Price"], "<br>")})
+    
+    labsresale <- lapply(seq(nrow(resale)), function(i) {
+      paste0( "Type: ", resale[i, "Type"], "<br>",
+              "ID: ", resale[i, "ID"], "<br>",
+              "Address: ", resale[i, "Address"], "<br>",
+              "Flat Type: ", resale[i, "Flat Type"], "<br>",
+              "Model: ", resale[i, "Model"], "<br>",
+              "Year Built: ", resale[i, "Year Built"], "<br>",
+              "Area: ", resale[i, "Area"], "<br>",
+              "Price: ", resale[i, "Price"])})
+    
+    labsmop <- lapply(seq(nrow(mop)), function(i) {
+      paste0( "Type: ", mop[i, "Type"], "<br>",
+              "ID: ", mop[i, "ID"], "<br>",
+              "Town/Name: ", mop[i, "Town/Name"], "<br>",
+              "Project Name: ", mop[i, "Project Name"], "<br>",
+              "End of MOP: ", mop[i, "End of MOP"], "<br>",
+              "Flat Type: ", mop[i, "Flat Type"], "<br>",
+              "Year Completed/ Year to be Complete: ", mop[i, "Year Completed/ Year to be Complete"], "<br>",
+              "Predicted Price: ", mop[i, "Predicted Price"], "<br>",
+              "No. of Units: ", mop[i, "No. of Units"])})
     
     leafletProxy("map") %>%
       clearGroup("BTO") %>%
       clearGroup("Resale") %>%
       clearGroup("MOP") %>%
-      addMarkers(data=bto,~lon,~lat,popup = ~`Town/Estate`, group="BTO", 
+      addMarkers(data=bto,~lon,~lat,label = lapply(labsbto, htmltools::HTML), group="BTO", 
                  icon=makeIcon("BTO.png",iconWidth=30, iconHeight=30),layerId=~`Town/Estate`) %>%
-      addMarkers(data=resale,~lon,~lat,group="Resale", 
+      addMarkers(data=resale,~lon,~lat,label = lapply(labsresale, htmltools::HTML),group="Resale", 
                  icon=makeIcon("Resale.png",iconWidth=30, iconHeight=30),layerId=~Address) %>%
-      addMarkers(data=mop,~lon,~lat,group="MOP", 
+      addMarkers(data=mop,~lon,~lat,label = lapply(labsmop, htmltools::HTML),group="MOP", 
                  icon=makeIcon("MOP.png",iconWidth=30, iconHeight=30),layerId=~`Project Name`)
     
   })

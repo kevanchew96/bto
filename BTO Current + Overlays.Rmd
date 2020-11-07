@@ -142,19 +142,25 @@ parks
 
 schools <- read.csv("Primary Schools.csv")
 btocurrent <- read.csv("BTONov.csv")
-html_legend <- "<img src='https://cdn.pixabay.com/photo/2018/02/18/20/34/locomotive-3163448_1280.png'style='width:10px;height:10px;'>MRT<br/>
+html_legend <- "<img src='https://www.flaticon.com/svg/static/icons/svg/2987/2987903.svg'style='width:10px;height:10px;'>&nbsp School<br/>
 
-<img src='https://cdn.pixabay.com/photo/2014/12/22/00/07/tree-576847_1280.png'style='width:10px;height:10px;'>Park<br/>
+<img src='https://www.flaticon.com/svg/static/icons/svg/3104/3104941.svg'style='width:10px;height:10px;'>&nbsp Park<br/>
 
-<img src='https://cdn.pixabay.com/photo/2017/01/31/00/09/book-2022464_1280.png'style='width:10px;height:10px;'>School<br/>
+<img src='https://www.flaticon.com/svg/static/icons/svg/1189/1189136.svg'style='width:10px;height:10px;'>&nbsp Community Centre<br/>
 
-<img src='https://cdn.pixabay.com/photo/2016/08/31/11/54/user-1633249_1280.png'style='width:10px;height:10px;'>School<br/>"
+<img src='https://www.flaticon.com/svg/static/icons/svg/821/821354.svg'style='width:10px;height:10px;'>&nbsp MRT<br/>
+
+<img src='https://www.flaticon.com/svg/static/icons/svg/2451/2451622.svg'style='width:10px;height:10px;'>&nbsp BTO<br/>
+
+<img src='https://www.flaticon.com/svg/static/icons/svg/3523/3523344.svg'style='width:10px;height:10px;'>&nbsp Resale<br/>
+
+<img src='https://www.flaticon.com/svg/static/icons/svg/3523/3523064.svg'style='width:10px;height:10px;'>&nbsp MOP Soon<br/>"
 
 
 
 leaflet() %>% addTiles() %>%
 addMarkers(data=schools, ~lon, ~lat,popup= ~Schools, label = ~Schools,
-                 icon=makeIcon("School.png",iconWidth = 12, iconHeight =12), group="Schools") %>% #image source: https://pixabay.com/vectors/book-books-library-books-reading-2022464/
+                 icon=makeIcon("School.png",iconWidth = 25, iconHeight =25), group="Schools") %>% #image source: https://pixabay.com/vectors/book-books-library-books-reading-2022464/
     addControl(html=html_legend,position = "bottomright")
 ```   
     
@@ -374,6 +380,67 @@ df$`Postal District`<- as.integer(df$`Postal District`)
 df
 write.csv(df,"Districts.csv")
 districts <- read.csv("Districts.csv")
-districts[1,4]
-districts[1,5]
+districts$Combined <- paste0(districts$Postal.District," - ", districts$General.Area)
+districts$Combined <- gsub(", Singapore", "",districts$Combined)
+districts %>% filter(Combined=="1 - Raffles      Place, Cecil, Marina, People's Park")
+
+mop <- read.csv("MOP_new.csv")
+mop <- mop %>% rename(`Town/Name`=`Town.Name`,`Project Name`=`Project.Name`,
+                      `Launch Date`=`Launch.Date`,`Year Completed/ Year to be Complete`=`Year.Completed`,
+                      `No. of Units`=`Total.Units`, `Flat Type`=flat_type,
+                      `End of MOP`=`End.of.MOP`, `Price (Predicted)`=price1) %>% 
+  select(ID, `Town/Name`, `Project Name`, `End of MOP`, `Flat Type`, 
+         `Year Completed/ Year to be Complete`, `Price (Predicted)`, `No. of Units`,lon, lat, Type)
+mop$`Flat Type` <- gsub("EXECUTIVE", "Executive", mop$`Flat Type`)
+
+
+mop <- mop[!is.na(mop$`Price (Predicted)`),]
+mop$`Price (Predicted)` <- round(mop$`Price (Predicted)`)
+mop$`Project ID` <- paste0(mop$`Project Name`," ",mop$`Flat Type`)
+mop
+resale <- read.csv("Resale_coords.csv")
+resale$Area <- gsub("[(Built)]","",resale$Area)
+resale
+bto
+```
+```{r}
+
+labsbto <- lapply(seq(nrow(bto)), function(i) {
+  paste0( "Type: ", bto[i, "Type"], "<br>",
+          "ID: ", bto[i, "ID"], "<br>",
+          "Month of Launch: ", bto[i, "Month of Launch"], "<br>",
+          "Town/Estate: ", bto[i, "Town/Estate"], "<br>",
+          "Estimated Flats: ", bto[i, "Estimated Flats"], "<br>",
+          "Estimated Price: ", bto[i, "Estimated Price"], "<br>",
+          "Area: ", bto[i, "Area"], "<br>",
+          "Price: ", bto[i, "Price"])})
+
+labsresale <- lapply(seq(nrow(resale)), function(i) {
+  paste0( "Type: ", resale[i, "Type"], "<br>",
+          "ID: ", resale[i, "ID"], "<br>",
+          "Address: ", resale[i, "Address"], "<br>",
+          "Flat Type: ", resale[i, "Flat Type"], "<br>",
+          "Model: ", resale[i, "Model"], "<br>",
+          "Year Built: ", resale[i, "Year Built"], "<br>",
+          "Area: ", resale[i, "Area"], "<br>",
+          "Price: ", resale[i, "Price"])})
+
+labsmop <- lapply(seq(nrow(resale)), function(i) {
+  paste0( "Type: ", resale[i, "Type"], "<br>",
+          "ID: ", resale[i, "ID"], "<br>",
+          "Town/Name: ", resale[i, "Town/Name"], "<br>",
+          "Project Name: ", resale[i, "Project Name"], "<br>",
+          "End of MOP: ", resale[i, "End of MOP"], "<br>",
+          "Flat Type: ", resale[i, "Flat Type"], "<br>",
+          "Year Completed/ Year to be Complete: ", resale[i, "Year Completed/ Year to be Complete"], "<br>",
+          "Predicted Price: ", resale[i, "Predicted Price"],
+          "No. of Units: ", resale[i, "No. of Units"])})
+
+
+```
+```{r}
+schools <- read.csv("Primary Schools.csv")
+schools <- read.csv("Primary Schools.csv")
+schools <- schools[order(schools$Schools),]
+schools %>% filter(Schools=="Admiralty Primary School")
 ```
