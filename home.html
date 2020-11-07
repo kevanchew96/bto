@@ -1,7 +1,17 @@
----
-title: "home.html"
-output: html_document
----
+<!DOCTYPE html> 
+<html> 
+
+<head>
+<!-- CSS -->
+<style>
+.center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 50%;
+}
+</style>
+</head>
 
 <!-- Carousel
 ================================================== -->
@@ -30,7 +40,7 @@ output: html_document
       <div class="container">
   <div class="carousel-caption">
     <h1 class="fit-head" style="color:white;">Want to know what is in the neighbourhood? </h1>
-    <p class="fit-text" style="color:white;">Use our maps to view the different housing, flat type options and facilities in each neighbourhood?</p>
+    <p class="fit-text" style="color:white;">Use our maps to view the different housing, flat type options and facilities in each neighbourhood.</p>
     <a class="btn btn-lg btn-primary" onclick="$('li:eq(2) a').tab('show');" role="button">Get started now &raquo;</a>
     <!-- <p>
       <form>
@@ -71,102 +81,31 @@ output: html_document
 
   <div class="row app-links">
   <div class="col-md-4">
-    <img src="images/district.png" width="100%" alt="novice">
-    <h2>Discover The Best District</h2>
-    <p>Not sure which district to start from when you are browsing for housing options? We are here to help you out!  </p>
+    <img src="images/district.png" width="150" height="150" alt="novice" class="center">
+    <h2 style="text-align:center;">Discover The Best District</h2>
+    <p style="text-align:center;">Not sure which district to start from when you are browsing for housing options? We are here to help you out!  </p>
+    <div style="text-align: center;">
     <a class="btn btn-primary" onclick="$('li:eq(1) a').tab('show');" role="button">View Districts &raquo;</a>
+    </div>
   </div><!-- /.col-md-4 -->
   <div class="col-md-4">
-    <img src="images/train.png" width="50%" alt="veteran">
-    <h2>Check Out The Neighbourhood</h2>
-    <p>You have found a district that you are interested in, but want to know more about the facilities and the housing options available? </p>
+    <img src="images/park.png" width="150" height="150" alt="veteran" class="center">
+    <h2 style="text-align:center;">Check Out The Neighbourhood</h2>
+    <p style="text-align:center;">You have found a district that you are interested in, but want to know more about the facilities and the housing options available? </p>
+    <div style="text-align: center;">
     <a class="btn btn-primary" onclick="$('li:eq(2) a').tab('show');" role="button">View neighborhood &raquo;</a>
+    </div>
   </div><!-- /.col-md-4 -->
   <div class="col-md-4">
-    <img src="images/calculator.png" width="50%" alt="evaluator">
-    <h2>Get To Know All The Grants</h2>
-    <p>You have identified a few suitable housing options and want to check the HDB grants that you can get for each housing option?</p>
+    <img src="images/calculator.png" width="150" height="150" alt="evaluator" class="center">
+    <h2 style="text-align:center;">Get To Know All The Grants</h2>
+    <p style="text-align:center;">You have identified a few suitable housing options and want to check the HDB grants that you can get for each housing option?</p>
+    <div style="text-align: center;">
     <a class="btn btn-primary" onclick="$('li:eq(3) a').tab('show');" role="button">Compare grants &raquo;</a>
+    </div>
+    <br>
   </div><!-- /.col-md-4 -->
   </div><!-- /.row -->
 
 
-  <!-- START THE FEATURETTES -->
-
-  <hr class="featurette-divider">
-
-  <div class="row featurette center-on-xs">
-  <div class="col-md-5 col-md-push-7">
-    <img class="featurette-image img-responsive" src="images/data.jpg" alt = "">
   </div>
-  <div class="col-md-7 col-md-pull-5">
-    <h2 class="featurette-heading">Intelligentsia.<br><span class="text-muted">Data-driven real estate evaluation</span></h2>
-    <p class="lead">Many cities across the world are experiencing a phenomenom known as &ldquo;gentrification&rdquo;. From a sociological perspective, gentrification raises questions about the displacement
-and &ldquo;pricing out&rdquo; of native residents, however, for real estate investors, it would appear to be
-a ripe opportunity for profit. As it turns out, this phenomenon can also be witnessed by understanding neighborhood demographics and other factors for which data are abound. <a data-toggle="collapse" data-parent="#accordionOne" href="#collapseOne">Read more&hellip;</a></p>
-     <div class="panel-group transparent-panel-group" id="accordionOne">
-        <div class="panel panel-default">
-          <div id="collapseOne" class="panel-collapse collapse">
-            <div class="panel-body text-left">
-              <blockquote class="blockquote">&ldquo;One by one, many of the working class quarters have been invaded by the middle class–upper and lower… Once this process of ‘gentrification’ starts in a district it goes on rapidly until all or most of the working class occupiers are displaced and the whole social character of the district is changed.&rdquo; (Glass, 1964)</blockquote>
-              <p>This change of social character is articulated more precisely in contemporary definitions of gentrification, which point to a spectrum of neighborhood changes including rising incomes (Kolko, 2007), increased renovations (Hammel and Wyly, 1996), higher education levels (Ley, 1986) and elevated housing prices (Freeman, 2005). Although definitions of gentrification vary in their exact specifications (Barton, 2014), the term is generally used to describe a core underlying pattern: the migration of wealthier residents and more upscale businesses into less-affluent urban areas. As a result of this movement, the fundamental complexion of the neighborhood is transformed: demographics shift, the physical of the area characteristics evolve, and most notably, housing prices rise (Maciag, 2015).</p>
-              <p>Varying degrees of this phenomenon have been observed in a number of cities across the U.S.: Portland, OR; Denver, CO; Charleston, SC and Austin, TX to name a few (Pan, 2017). New York City has also seen its share of gentrifying neighborhoods in the last decade: In the period 2011 to early 2017, nine NYC regions with a starting estimated price per square foot under $500 saw appreciation above 50% in a five year period.</p>
-              <p>From a sociological perspective, gentrification raises questions about the displacement and “pricing out” of native residents, however, for real estate investors, it would appear to be a ripe opportunity for profit. Anecdotal stories of owners receiving double or even triple the values of their original investment are common (Cardwell, 2011).</p>
-            </div>
-          </div>
-        </div>
-      </div>
-  </div>
-  </div>
-
-  <hr class="featurette-divider">
-
-  <div class="row featurette center-on-xs">
-  <div class="col-md-5">
-    <img class="featurette-image img-responsive" src="images/analysis.png" alt = "">
-  </div>
-  <div class="col-md-7">
-    <h2 class="featurette-heading">We <i class="fa fa-heart" style="color:#bf2604;"></i> Data.<br><span class="text-muted">We really, really do</span></h2>
-    <p class="lead">We analyzed billions of data points so you don&rsquo;t have to! <a data-toggle="collapse" data-parent="#accordionTwo" href="#collapseTwo">Read more&hellip;</a></p>
-     <div class="panel-group transparent-panel-group" id="accordionTwo">
-        <div class="panel panel-default">
-          <div id="collapseTwo" class="panel-collapse collapse">
-            <div class="panel-body text-left">
-              <p>The objective of Intelligentsia is to provide residential real estate investors with a home value appreciation forecast for neighborhoods within New York City. Our solution ranks NYC census tracts by <em>likelihood of gentrification, defined as a 20%+ gain in median home value over a two (and three) year period</em>. The model is designed for use on census tracts with a <em>starting median home value less than or equal to $500,000</em>. These parameter values were selected to address both the shortfalls of existing real estate tools as well as to address the interests of our target audience:</p>
-              <ul>
-                <li><em>Census tracts</em> are small enough to distinguish distinctive area characteristics and are not addressed by existing forecasting solutions (such as Case-Shiller)</li>
-                <li><em>Median home value</em> data covered more census tracts than other measures (such as cost per square foot) and therefore open up more new investment opportunities</li>
-                <li>A <em>20%+ gain in median home value</em> represents the minimum return that must be attained to recoup transaction costs on a $500,000 investment</li>
-                <li>The <em>2- and 3-year forecast windows</em> were the shortest time period in which a viable number of census tracts saw 20%+ gain in median home value</li>
-              </ul>
-              <p>A plethora of data were acquired and analyzed to create the Intelligentsia model. Among those data sets are:</p>
-              <ul>
-                <li>Retail environment data: Yelp ratings</li>
-                <li>Transportation data: NYC TLC taxicab trips, NYC Subway network and stations, residents&rsquo; travel time to work</li>
-                <li>Quality of life: Number and location of trees (NYC Open Data), Crime complaints (NYPD)</li>
-                <li>Online data: Edits of Wikipedia neighborhood articles, Google Search Trends</li>
-                <li>Housing: Median home value, gross rent, year structure built (Zillow, ACS/Census)</li>
-                <li>Demographics: Median income, age, education, poverty, employment (ACS/Census)</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <hr class="featurette-divider">
-
-  <div class="row featurette center-on-xs">
-    <div class="col-md-5 col-md-push-7">
-      <img class="featurette-image img-responsive" src="images/group_photo.jpg" alt = "">
-    </div>
-    <div class="col-md-7 col-md-pull-5">
-      <h2 class="featurette-heading">Introducting Intelligentsia.<br><span class="text-muted">This is us!</span></h2>
-      <p class="lead">This website, the data and the gentrification model are the result of the capstone project of team &ldquo;Intelligentsia&rdquo;, Class of 2017 of the MSBA program at New York University Stern School of Business. <a href="#" onclick="$('li:eq(3) a').tab('show');">Read more about us&hellip;</a></p>
-    </div>
-  </div>
-
-</div>
-<!-- /END THE FEATURETTES -->
-
