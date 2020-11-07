@@ -42,8 +42,7 @@ resale <- read.csv("Resale_coords.csv")
 resale <- distinct(resale %>% subset(select = -c(`X.1`,X)))
 resale$ID<- paste0("R",seq(1:nrow(resale)))
 resale$Price <- (gsub("[\\$,]", "", resale$Price))
-<<<<<<< Updated upstream
-=======
+
 
 mop <- read.csv("MOP.csv")
 mop$X <- paste0("M",mop$X)
@@ -72,12 +71,9 @@ predicted_data_final <- predicted_data_temp1 %>% group_by(town, flat_type) %>% s
 mop <- merge.data.frame(x= mop2, y= predicted_data_final, by = c('flat_type', 'town'), all.x = TRUE) 
 
 mop <- read.csv("MOP_new.csv")
-bto <- read.csv("BTO_new.csv")
-mop$price1 <- round(mop$price1)
-names(bto)[3] <- "Town/Estate"
 
-=======
->>>>>>> Stashed changes
+
+
 resale <- resale %>% select(ID,everything())
 
 mop <- read.csv("MOP_new.csv")
@@ -88,11 +84,15 @@ mop <- mop %>% rename(`Town/Name`=`Town.Name`,`Project Name`=`Project.Name`,
   select(ID, `Town/Name`, `Project Name`, `End of MOP`, `Flat Type`, 
          `Year Completed/ Year to be Complete`, `Price (Predicted)`, `No. of Units`,lon, lat, Type)
 mop$`Flat Type` <- gsub("EXECUTIVE", "Executive", mop$`Flat Type`)
+
+
 mop <- mop[!is.na(mop$`Price (Predicted)`),]
-<<<<<<< Updated upstream
-=======
->>>>>>> 7584fc795d20a1d1cf9d4008c3f57a4a07a7c093
->>>>>>> Stashed changes
+mop$`Price (Predicted)` <- round(mop$`Price (Predicted)`)
+
+bto <- read.csv("BTO_new.csv")
+names(bto)[3] <- "Town/Estate"
+
+
 
 # Primary schools
 schools <- read.csv("Primary Schools.csv")
@@ -519,7 +519,7 @@ find_price <- function(ID){
     
   }else if ((substring(ID, 1, 1)) == 'M'| (substring(ID, 1, 1)) == 'm'){
     row_index <- as.numeric(substring(ID, 2, 9))
-    price <- as.numeric(format(mop[row_index, "price1"], scientific = F))
+    price <- as.numeric(format(mop[row_index, 'Price (Predicted)'], scientific = F))
     
   }else if ((substring(ID, 1, 1)) == 'B'| (substring(ID, 1, 1)) == 'b'){
     row_index <- as.numeric(substring(ID, 2, 9))
@@ -533,6 +533,9 @@ find_price <- function(ID){
   }
   return(price)
 }
+
+
+
 
 
 ####################  UI FUNCTIONS #####################################################################################
