@@ -897,10 +897,11 @@ server <- function(input, output,session){
     leaflet() %>%  setView(lat = 1.376875, lng = 103.822169,
                            zoom = 11) %>%
       addTiles() %>%
+      
       addMarkers(lat = as.numeric((find_lonlat(input$home_type_1))[2]), lng = as.numeric((find_lonlat(input$home_type_1))[1]) ) %>%
       addMarkers(lat = as.numeric((find_lonlat(input$home_type_2))[2]), lng = as.numeric((find_lonlat(input$home_type_2))[1]) ) %>%
-      addMarkers(lat = as.numeric(geocode(paste("Singapore", as.character(input$parent_address)))[2]), lng = as.numeric(geocode(paste("Singapore", as.character(input$parent_address)))[1]), popup = "Your Parents' Home")
-      
+      addMarkers(lat = as.numeric(geocode(paste("Singapore", as.character(input$parent_address)))[2]), lng = as.numeric(geocode(paste("Singapore", as.character(input$parent_address)))[1]), popup = "Your Parents' Home") %>%
+      addCircles(lat = as.numeric(geocode(paste("Singapore", as.character(input$parent_address)))[2]),lng = as.numeric(geocode(paste("Singapore", as.character(input$parent_address)))[1]), radius= 2000,fillOpacity=0.1, layerId="x") 
     
   
       )
