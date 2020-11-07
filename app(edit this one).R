@@ -317,11 +317,11 @@ resale_breakdown<- function(base_price, income, flat_type, distance_from_p, with
   sum_of_grant <- sum(c(f_grant, s_grant, hh_grant, eh_grant, single_eh_grant, p_grant))
   balance <- base_price - sum_of_grant - downpayment_amt
   
-  cost_breakdown <- c(balance, downpayment_amt, f_grant, s_grant, hh_grant, eh_grant, single_eh_grant, p_grant)
+  cost_breakdown <- c(f_grant, s_grant, hh_grant, eh_grant, single_eh_grant, p_grant, downpayment_amt, balance)
   
   df <- data.frame(matrix(ncol=3,nrow=8, dimnames=list(NULL, c("total_price", "type", "amount") )))
   
-  types <- c("Balance", "Downpayment" , "Family Grant", "Singles Grant", "Half housing Grant", "Enhanced Housing Grant", "Singles Enhanced Housing Grant", "Proximity Grant")
+  types <- c( "Family Grant", "Singles Grant", "Half housing Grant", "Enhanced Housing Grant", "Singles Enhanced Housing Grant", "Proximity Grant" , "Downpayment","Balance")
   
   title <- c(rep(base_price, 8))
   
@@ -373,11 +373,11 @@ bto_breakdown<- function(base_price, income, is_married, citizenship, applicatio
   sum_of_grant <- sum(c(eh_grant, single_eh_grant))
   balance <- base_price - sum_of_grant - downpayment_amt
   
-  bto_cost_breakdown<- c(balance, downpayment_amt, eh_grant, single_eh_grant)
+  bto_cost_breakdown<- c(eh_grant, single_eh_grant, downpayment_amt, balance)
   
   df <- data.frame(matrix(ncol=3,nrow=4, dimnames=list(NULL, c("total_price", "type", "amount") )))
   
- types <- c("Balance", "Downpayment", "Enhanced Housing Grant", "Singles Enhanced Housing Grant")
+ types <- c("Enhanced Housing Grant", "Singles Enhanced Housing Grant", "Downpayment","Balance")
   
   title <- c(rep(base_price, 4))
   
@@ -897,10 +897,11 @@ server <- function(input, output,session){
     leaflet() %>%  setView(lat = 1.376875, lng = 103.822169,
                            zoom = 11) %>%
       addTiles() %>%
+      
       addMarkers(lat = as.numeric((find_lonlat(input$home_type_1))[2]), lng = as.numeric((find_lonlat(input$home_type_1))[1]) ) %>%
       addMarkers(lat = as.numeric((find_lonlat(input$home_type_2))[2]), lng = as.numeric((find_lonlat(input$home_type_2))[1]) ) %>%
-      addMarkers(lat = as.numeric(geocode(paste("Singapore", as.character(input$parent_address)))[2]), lng = as.numeric(geocode(paste("Singapore", as.character(input$parent_address)))[1]), popup = "Your Parents' Home")
-      
+      addMarkers(lat = as.numeric(geocode(paste("Singapore", as.character(input$parent_address)))[2]), lng = as.numeric(geocode(paste("Singapore", as.character(input$parent_address)))[1]), popup = "Your Parents' Home") %>%
+      addCircles(lat = as.numeric(geocode(paste("Singapore", as.character(input$parent_address)))[2]),lng = as.numeric(geocode(paste("Singapore", as.character(input$parent_address)))[1]), radius= 2000,fillOpacity=0.1, layerId="x") 
     
   
       )
