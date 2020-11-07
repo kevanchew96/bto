@@ -81,7 +81,7 @@ predicted_data_temp1 <- predicted_data[, c("town", "flat_type", "price1")]
 predicted_data_final <- predicted_data_temp1 %>% group_by(town, flat_type) %>% summarise(price1= mean(price1))
 
 mop <- merge.data.frame(x= mop2, y= predicted_data_final, by = c('flat_type', 'town'), all.x = TRUE) 
-
+mop
 bto2 <- bto %>% gather(key = "flat_type", value = "price", c("2-Room Flexi", "3-Room", "4-Room","5-Room"))
 bto2$flat_type <- gsub(" Flexi", "", bto2$flat_type)
 bto2$flat_type <- gsub("Room", "ROOM", bto2$flat_type)
@@ -98,7 +98,15 @@ predicted_data_3
 
 #bto_final <- merge.data.frame(x= bto2, y= predicted_data_temp2, by = c('flat_type', 'town', 'price' ), all.x = TRUE)
 
-#bto_final
-bto2
+bto_final
+
+```
+
+
+```{r}
+
+bto
+bto3 <- bto %>% gather(key = "flat_type", value = "price", c("2-Room Flexi", "3-Room", "4-Room","5-Room"))
+bto3 %>% filter(!is.na(bto3$price)) %>% arrange(`Town/Estate`)
 
 ```
