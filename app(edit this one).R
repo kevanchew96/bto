@@ -43,7 +43,6 @@ resale <- distinct(resale %>% subset(select = -c(`X.1`,X)))
 resale$ID<- paste0("R",seq(1:nrow(resale)))
 resale$Price <- (gsub("[\\$,]", "", resale$Price))
 
-
 mop <- read.csv("MOP.csv")
 mop$X <- paste0("M",mop$X)
 mop <- mop %>% rename(ID=X,`Town/Name`=`Town.Name`,`Project Name`=`BTO.Project.Name`,
@@ -69,8 +68,6 @@ predicted_data_temp1 <- predicted_data[, c("town", "flat_type", "price1")]
 predicted_data_final <- predicted_data_temp1 %>% group_by(town, flat_type) %>% summarise(price1= mean(price1))
 
 mop <- merge.data.frame(x= mop2, y= predicted_data_final, by = c('flat_type', 'town'), all.x = TRUE) 
-
-mop <- read.csv("MOP_new.csv")
 
 
 
@@ -127,9 +124,9 @@ mrt$final <- ifelse(grepl("N/A",mrt$MRT.Alpha.numeric.code.s.....In.operation,fi
 #resale_grant: family grant
 family_grant <- function(income, flat_type, is_married, citizenship, application){
   if(income <=14000 & citizenship == "SC,SC" & is_married == T & application == "FT,FT"){
-    f_grant <- ifelse((flat_type == "2 ROOM" | flat_type == "3 ROOM"| flat_type == "4 ROOM"), yes = 50000, no = 40000)
+    f_grant <- ifelse((flat_type == "2-Room" | flat_type == "3-Room"| flat_type == "4-Room"), yes = 50000, no = 40000)
   } else if (income <=14000 & citizenship == "SC,SPR" & is_married == T & application == "FT,FT") {
-    f_grant <- ifelse((flat_type == "2 ROOM" | flat_type == "3 ROOM"| flat_type == "4 ROOM"), yes = 40000, no = 30000)
+    f_grant <- ifelse((flat_type == "2-Room" | flat_type == "3-Room"| flat_type == "4-Room"), yes = 40000, no = 30000)
   } else{
     f_grant <- 0
   }
@@ -140,7 +137,7 @@ family_grant <- function(income, flat_type, is_married, citizenship, application
 #resale_grant : singles grant
 singles_grant <- function(income, flat_type, is_married, citizenship, application){
   if(income <= 7000 & is_married == F & application == "FT" & citizenship == "SC" | is_married == T & income <=14000 & citizenship == "SC,F" & application == "FT,FT"){
-    s_grant <- ifelse((flat_type == "2 ROOM" | flat_type == "3 ROOM"| flat_type == "4 ROOM"), yes = 25000, no = 20000)
+    s_grant <- ifelse((flat_type == "2-Room" | flat_type == "3-Room"| flat_type == "4-Room"), yes = 25000, no = 20000)
   } else {
     s_grant <- 0
   }
@@ -153,7 +150,7 @@ singles_grant <- function(income, flat_type, is_married, citizenship, applicatio
 half_housing_grant <- function(income, flat_type, is_married, citizenship, application){
   
   if(income <= 14000 & is_married == T & citizenship != "SC,F" & application == "FT,ST") {
-    hh_grant <- ifelse((flat_type == "2 ROOM" | flat_type == "3 ROOM"| flat_type == "4 ROOM"), yes = 25000, no = 20000)
+    hh_grant <- ifelse((flat_type == "2-Room" | flat_type == "3-Room"| flat_type == "4-Room"), yes = 25000, no = 20000)
     
   } else{
     hh_grant <- 0
@@ -534,6 +531,31 @@ find_price <- function(ID){
   return(price)
 }
 
+#Find room-type for relevant property
+
+find_room <- function(ID){
+  
+  if((substring(ID, 1, 1)) == 'R'|(substring(ID, 1, 1)) == 'r'){
+    
+    row_index <- as.numeric(substring(ID, 2, 9))
+    room_type <- resale[row_index, "Room"]
+    
+  }else if ((substring(ID, 1, 1)) == 'M'| (substring(ID, 1, 1)) == 'm'){
+    row_index <- as.numeric(substring(ID, 2, 9))
+    room_type <- mop[row_index, 'Flat Type']
+    
+  }else if ((substring(ID, 1, 1)) == 'B'| (substring(ID, 1, 1)) == 'b'){
+    row_index <- as.numeric(substring(ID, 2, 9))
+    room_type <- bto[row_index, "flat_type"]
+    
+  }
+  
+  else{
+    room_type <- NA
+    
+  }
+  return(room_type)
+}
 
 
 
@@ -579,11 +601,7 @@ financePlan <- function(){
                textInput("home_type_2","Second Apartment ID",value="")
         ),
         fluidRow(
-          column(width=6,
-                 selectInput("flat_type_1","First Flat type",choices=c("2 ROOM","3 ROOM","4 ROOM","5 ROOM","EXECUTIVE","Multi-Generation"))
-          ),
-          column(width=6,
-                 selectInput("flat_type_2","Second Flat type",choices=c("2 ROOM","3 ROOM","4 ROOM","5 ROOM","EXECUTIVE","Multi-Generation")))
+          actionButton(inputId = "mapgen",label= "See Selected Properties")
         )
       )
     ),
@@ -968,59 +986,77 @@ server <- function(input, output,session){
   
   #Financial Planning Map
   
-  
   output$leaflet_parents <- renderLeaflet(
-    
-    leaflet() %>%  setView(lat = 1.376875, lng = 103.822169,
-                           zoom = 11) %>%
-      addTiles() %>%
-      
-      addMarkers(lat = as.numeric((find_lonlat(input$home_type_1))[2]), lng = as.numeric((find_lonlat(input$home_type_1))[1]) ) %>%
-      addMarkers(lat = as.numeric((find_lonlat(input$home_type_2))[2]), lng = as.numeric((find_lonlat(input$home_type_2))[1]) ) %>%
-      addMarkers(lat = as.numeric(geocode(paste("Singapore", as.character(input$parent_address)))[2]), lng = as.numeric(geocode(paste("Singapore", as.character(input$parent_address)))[1]), popup = "Your Parents' Home") %>%
-      addCircles(lat = as.numeric(geocode(paste("Singapore", as.character(input$parent_address)))[2]),lng = as.numeric(geocode(paste("Singapore", as.character(input$parent_address)))[1]), radius= 2000,fillOpacity=0.1, layerId="x") 
-    
+    {
+      leaflet() %>% 
+      addTiles() %>%  
+       setView(lng = 103.803214, lat = 1.368063, zoom = 11)
+    })
   
-      )
-  
-  
-  
-  
-  
-  #Grant Breakdown
-  
-  output$price_grant_barchart_1 <- renderPlotly( {
-    
-    cost_calculator(input$home_type_1,
-                find_price(input$home_type_1),
-                  input$NetIncome, 
-                 input$flat_type_1, 
-                 measure_distance_from_p(input$parent_address, (find_lonlat(input$home_type_1))), 
-                 (input$with_parents == "Yes"), 
-                 (input$marital_status == "Married") ,
-                 input$Nationality, 
-                 input$FTST)
-    
-  }
-    )
   
 
+
   
-  output$price_grant_barchart_2 <- 
-    renderPlotly( {
+  observeEvent(input$mapgen, {
+    property1 <- find_lonlat(input$home_type_1)
+    property2 <- find_lonlat(input$home_type_2)
+    parents_add <- geocode(paste("Singapore", as.character(input$parent_address)))
+    
+    
+    leafletProxy("leaflet_parents") %>%
+  
+      addMarkers(lat = as.numeric(property1[2]), lng = as.numeric(property1[1]), popup = "Property 1") %>%
+      addMarkers(lat = as.numeric(property2[2]), lng = as.numeric(property2[1]), popup = "Property 2") %>%
+      addMarkers(lat = as.numeric(parents_add[2]),lng = as.numeric(parents_add[1]), popup = "Your Parents' Home") %>%
+      addCircles(lat = as.numeric(parents_add[2]),lng = as.numeric(parents_add[1]), radius= 2000,fillOpacity=0.1, layerId="x")
+ 
+    
+    #Grant Breakdown
+    
+    output$price_grant_barchart_1 <- renderPlotly( {
+      
+      cost_calculator(input$home_type_1,
+                      find_price(input$home_type_1),
+                      input$NetIncome, 
+                      find_room(input$home_type_1), 
+                      measure_distance_from_p(input$parent_address, (find_lonlat(input$home_type_1))), 
+                      (input$with_parents == "Yes"), 
+                      (input$marital_status == "Married") ,
+                      input$Nationality, 
+                      input$FTST)
+      
+    }
+    )
+
+    output$price_grant_barchart_2 <- 
+      renderPlotly( {
         cost_calculator(input$home_type_2,
                         find_price(input$home_type_2),
-                         input$NetIncome, 
-                         input$flat_type_2, 
-                         measure_distance_from_p(input$parent_address, (find_lonlat(input$home_type_2))), 
-                         (input$with_parents == "Yes"), 
-                         (input$marital_status == "Married") ,
-                         input$Nationality, 
-                         input$FTST)
+                        input$NetIncome, 
+                        find_room(input$home_type_2), 
+                        measure_distance_from_p(input$parent_address, (find_lonlat(input$home_type_2))), 
+                        (input$with_parents == "Yes"), 
+                        (input$marital_status == "Married") ,
+                        input$Nationality, 
+                        input$FTST)
         
       }
       )
-      
+    
+    
+    
+    
+    
+    
+     })
+  
+  
+  
+  
+  
+  
+
+
   
 
       
