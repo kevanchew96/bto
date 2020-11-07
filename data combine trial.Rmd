@@ -69,12 +69,6 @@ mop <- mop[,c(1,2,3,4,14,5,6,7,8,9,10,11,12,13,15,16)] %>% select(-Type,Type)
 ```{r}
 predicted_data <- read_csv("predicted_price.csv")
 
-#colnames(predicted_data$resale_price) <- 'price'
-
-#View(predicted_data) 
-#resale
-
-
 mop2 <- mop %>% gather(key = "flat_type", value = "num_of_units", c("Studio Units", "2-Room Units", "3-Room Units","4-Room Units", "5-Room Units", "3Gen Units" ))
 mop2$flat_type <- gsub(" Units", "", mop2$flat_type)
 mop2$flat_type <- gsub("Room", "ROOM", mop2$flat_type)
@@ -82,11 +76,29 @@ mop2$flat_type <- gsub("-", " ", mop2$flat_type)
 mop2$flat_type <- gsub("3Gen", "EXECUTIVE", mop2$flat_type)
 mop2$town <- toupper(mop2$`Town/Name`)
 
-mop2
-#predicted_data_final <- predicted_data[,1:6]
-#predicted_data_final
 
-mop3 <- merge(x= mop2, y= predicted_data_final, by = c('town', 'flat_type')) 
-mop4 <- distinct(mop3)
-mop4
+predicted_data_temp1 <- predicted_data[, c("town", "flat_type", "price1")]
+predicted_data_final <- predicted_data_temp1 %>% group_by(town, flat_type) %>% summarise(price1= mean(price1))
+
+mop <- merge.data.frame(x= mop2, y= predicted_data_final, by = c('flat_type', 'town'), all.x = TRUE) 
+
+bto2 <- bto %>% gather(key = "flat_type", value = "price", c("2-Room Flexi", "3-Room", "4-Room","5-Room"))
+bto2$flat_type <- gsub(" Flexi", "", bto2$flat_type)
+bto2$flat_type <- gsub("Room", "ROOM", bto2$flat_type)
+bto2$flat_type <- gsub("-", " ", bto2$flat_type)
+bto2$town<- toupper(bto2$`Town/Estate`)
+
+ 
+
+predicted_data_temp2 <- predicted_data[, c("town", "flat_type", "price1", "resale_price")]
+predicted_data_3 <- predicted_data_temp2 %>% group_by(town, flat_type, resale_price) %>% summarise(price1= mean(price1))
+predicted_data_3
+
+#predicted_data_temp2 <- predicted_data_temp2 %>% rename("price" = "resale_price") 
+
+#bto_final <- merge.data.frame(x= bto2, y= predicted_data_temp2, by = c('flat_type', 'town', 'price' ), all.x = TRUE)
+
+#bto_final
+bto2
+
 ```
