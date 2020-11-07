@@ -41,6 +41,8 @@ bto <- bto %>% rename(ID=X,`Month of Launch`=`Month.of.Launch`,`Town/Estate`=`To
 resale <- read.csv("Resale_coords.csv") 
 resale$X.1 <- paste0("R",resale$X.1)
 resale <- resale %>% rename(ID=X.1) %>% subset(select = -c(X))
+resale$Price <- (gsub("[\\$,]", "", resale$Price))
+
 mop <- read.csv("MOP.csv")
 mop$X <- paste0("M",mop$X)
 mop <- mop %>% rename(ID=X,`Town/Name`=`Town.Name`,`Project Name`=`BTO.Project.Name`,
@@ -51,6 +53,7 @@ mop <- mop %>% rename(ID=X,`Town/Name`=`Town.Name`,`Project Name`=`BTO.Project.N
                       `End of MOP`=`End_of_mop`) %>% subset(select=-c(idMOP))
 
 mop <- mop[,c(1,2,3,4,14,5,6,7,8,9,10,11,12,13,15,16)] %>% select(-Type,Type)
+
 
 
 # Primary schools
@@ -342,13 +345,13 @@ resale_breakdown<- function(base_price, income, flat_type, distance_from_p, with
 }
 
 
-
+#Total BTO Breakdown
 
 bto_breakdown<- function(base_price, income, is_married, citizenship, application){
   eh_grant <- 0
   single_eh_grant <- 0
   if(is_married == T & citizenship == "SC,SC" & application == "FT,FT"){
-    eh_grant <- enhanced_housing_grant(income, is_married, citizenship)
+    eh_grant <- enhanced_housing_grant(income, is_married, citizenship, application)
   }
   
   else if (is_married == T & citizenship == "SC,SC" & application == "FT,ST"){
@@ -399,7 +402,22 @@ bto_breakdown<- function(base_price, income, is_married, citizenship, applicatio
 }
 
 
+#use the relevant grant calculator
 
+cost_calculator <- function (ID, base_price, income, flat_type, distance_from_p, with_parents, is_married, citizenship, application){
+  
+
+  if((substring(ID, 1, 1)) == 'B'|(substring(ID, 1, 1)) == 'b'){
+    
+  
+    bto_breakdown (base_price, income, is_married, citizenship, application)
+    
+  }else {
+    resale_breakdown(base_price, income, flat_type, distance_from_p, with_parents, is_married, citizenship, application)
+    
+  }
+  
+}
 
 
 
@@ -440,6 +458,27 @@ measure_distance_from_p <- function(parent_postal_code, your_lon_lat){  #your_lo
 }
 
 
+
+
+#find the price for the relevant property
+
+find_price <- function(ID){
+  ID_char <- as.character(ID)
+  if((substring(ID, 1, 1)) == 'R'|(substring(ID, 1, 1)) == 'r'){
+    
+    row_index <- as.numeric(substring(ID, 2, 9))
+    price <- as.numeric(format(resale[row_index, "Price"],scientific = F))
+    
+  }else if ((substring(ID, 1, 1)) == 'M'| (substring(ID, 1, 1)) == 'm'){
+    
+    price <- as.numeric(format(400000, scientific = F))
+    
+  }else{
+    price <- as.numeric(format(400000, scientific = F))
+    
+  }
+  return(price)
+}
 
 
 ####################  UI FUNCTIONS #####################################################################################
@@ -626,19 +665,21 @@ ui <- fluidPage(theme=shinytheme("sandstone"),HTML(html_fix),navbarPage(title = 
                                                                                                    choices = c("None Selected","A", "B")),
                                                                                       
                                                                                       
-                                                                                      # Select which Housing Type(s) to plot
-                                                                                      checkboxGroupInput(inputId = "HousingType",
-                                                                                                         label = "Select Housing Type(s):",
-                                                                                                         choices = c("BTO" = "BTO", 
-                                                                                                                     "Resale" = "Resale",
-                                                                                                                     "BTO reaching MOP soon" = "MOP"),
-                                                                                                         selected = "BTO"),
+                                                                                      # Select which Housing Type to plot
+                                                                                      radioButtons(inputId = "HousingType",
+                                                                                                   label = "Select Housing Type:",
+                                                                                                   choices = c("BTO" = "BTO", 
+                                                                                                               "Resale" = "Resale",
+                                                                                                               "BTO reaching MOP soon" = "MOP"),
+                                                                                                   selected = "BTO"),
+                                                                                      actionButton("goButton", "Go!"),
                                                                                       # Select which Type of Room(s) to plot   
-                                                                                      checkboxGroupInput(inputId = "RoomType",
-                                                                                                         label = "Select Type of Room(s) for Resale:",
-                                                                                                         choices = c("2-Room", "3-Room", "4-Room",
-                                                                                                                     "5-Room"),
-                                                                                                         selected = "2-Room")
+                                                                                      radioButtons(inputId = "RoomType",
+                                                                                                   label = "Select Type of Room for Resale:",
+                                                                                                   choices = c("2-Room", "3-Room", "4-Room",
+                                                                                                               "5-Room"),
+                                                                                                   selected = "2-Room"),
+                                                                                      actionButton("goButton2", "Go!")
                                                                       )),
                                                                       
                                                                       fluidRow(column(12,
@@ -872,8 +913,9 @@ server <- function(input, output,session){
   
   output$price_grant_barchart_1 <- renderPlotly( {
     
-    resale_breakdown(400000,
-                input$NetIncome, 
+    cost_calculator(input$home_type_1,
+                find_price(input$home_type_1),
+                  input$NetIncome, 
                  input$flat_type_1, 
                  measure_distance_from_p(input$parent_address, (find_lonlat(input$home_type_1))), 
                  (input$with_parents == "Yes"), 
@@ -888,7 +930,8 @@ server <- function(input, output,session){
   
   output$price_grant_barchart_2 <- 
     renderPlotly( {
-        resale_breakdown(400000,
+        cost_calculator(input$home_type_2,
+                        find_price(input$home_type_2),
                          input$NetIncome, 
                          input$flat_type_2, 
                          measure_distance_from_p(input$parent_address, (find_lonlat(input$home_type_2))), 
@@ -901,8 +944,7 @@ server <- function(input, output,session){
       )
       
   
-      
- 
+
       
 
 

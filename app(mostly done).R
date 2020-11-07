@@ -99,18 +99,20 @@ ui <- fluidPage(
                   
                       
                       # Select which Housing Type(s) to plot
-                                          checkboxGroupInput(inputId = "HousingType",
+                                          radioButtons(inputId = "HousingType",
                                                              label = "Select Housing Type(s):",
                                                              choices = c("BTO" = "BTO", 
                                                                          "Resale" = "Resale",
                                                                          "BTO reaching MOP soon" = "MOP"),
                                                              selected = "BTO"),
+                                           actionButton("goButton", "Go!"),
                       # Select which Type of Room(s) to plot   
-                                          checkboxGroupInput(inputId = "RoomType",
+                                          radioButtons(inputId = "RoomType",
                                                              label = "Select Type of Room(s) for Resale:",
                                                              choices = c("2-Room", "3-Room", "4-Room",
                                                                          "5-Room"),
-                                                             selected = "2-Room")
+                                                             selected = "2-Room"),
+                                          actionButton("goButton2", "Go!")
                           )),
                       
                       fluidRow(column(12,
@@ -330,8 +332,12 @@ server <- function(input, output)
     filter(mop, Type %in% input$HousingType) 
   })
   
-  
+# Continue here
   observe({
+    input$goButton
+    
+    type <- isolate(input$HousingType)
+    filter(mop, Type %in% Type) 
     if(nrow(MOP())==0)
     {
       leafletProxy("map") %>%
