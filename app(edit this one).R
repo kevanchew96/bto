@@ -485,6 +485,11 @@ find_lonlat <- function(ID){
     row_index <- as.numeric(substring(ID, 2, 9))
     lon <- mop[row_index, "lon"]
     lat <- mop[row_index, "lat"]
+  } else{
+    
+    lon <- NA
+    lat <- NA
+    
   }
   return(c(lon,lat))
 }
