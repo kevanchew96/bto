@@ -558,6 +558,32 @@ find_room <- function(ID){
 }
 
 
+#Find address for relevant property
+
+find_address <- function(ID){
+  
+  if((substring(ID, 1, 1)) == 'R'|(substring(ID, 1, 1)) == 'r'){
+    
+    row_index <- as.numeric(substring(ID, 2, 9))
+    address <- resale[row_index, "Address"]
+    
+  }else if ((substring(ID, 1, 1)) == 'M'| (substring(ID, 1, 1)) == 'm'){
+    row_index <- as.numeric(substring(ID, 2, 9))
+    address <- mop[row_index, 'Project Name']
+    
+  }else if ((substring(ID, 1, 1)) == 'B'| (substring(ID, 1, 1)) == 'b'){
+    row_index <- as.numeric(substring(ID, 2, 9))
+    address <- paste(bto[row_index, "Town/Estate"], "BTO", sep = " ")
+    
+  }
+  
+  else{
+   address <- NA
+    
+  }
+  return(address)
+}
+
 
 
 ####################  UI FUNCTIONS #####################################################################################
@@ -1005,8 +1031,8 @@ server <- function(input, output,session){
     
     leafletProxy("leaflet_parents") %>%
   
-      addMarkers(lat = as.numeric(property1[2]), lng = as.numeric(property1[1]), popup = "Property 1") %>%
-      addMarkers(lat = as.numeric(property2[2]), lng = as.numeric(property2[1]), popup = "Property 2") %>%
+      addMarkers(lat = as.numeric(property1[2]), lng = as.numeric(property1[1]), popup = find_address(input$home_type_1)) %>%
+      addMarkers(lat = as.numeric(property2[2]), lng = as.numeric(property2[1]), popup = find_address(input$home_type_2)) %>%
       addMarkers(lat = as.numeric(parents_add[2]),lng = as.numeric(parents_add[1]), popup = "Your Parents' Home") %>%
       addCircles(lat = as.numeric(parents_add[2]),lng = as.numeric(parents_add[1]), radius= 2000,fillOpacity=0.1, layerId="x")
  
