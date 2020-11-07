@@ -601,7 +601,7 @@ financePlan <- function(){
           h1("Financial Planning", class = "title fit-h1"),
           p("You have already identified two apartments of interest, but cannot decide which one to buy? Let us help make your final decision.
           Enter your personal details to see what grants you can qualify for. 
-          Then, enter the addresses and flat types of the apartments you have in mind and we will show you the price breakdown for each apartment."),
+          Then, enter the Apartment IDs that you have noted down from the Housing View Page."),
       )
     ),
     tags$h4("Enter your details"),
@@ -625,6 +625,7 @@ financePlan <- function(){
         column(width=6,selectInput("with_parents","Are you intending to stay with your parents?",choices =c("Yes","No")))
       ),
       fluidRow(
+        tags$div(style="margin-left:10px;",helpText("Note: You can get the Apartment IDs from the table in the Housing View Page.")),
         column(width=6,
                textInput("home_type_1","First Apartment ID",value="")
         ),
@@ -632,7 +633,7 @@ financePlan <- function(){
                textInput("home_type_2","Second Apartment ID",value="")
         ),
         fluidRow(
-          actionButton(inputId = "mapgen",label= "See Selected Properties")
+          tags$div(style="margin-left:15px;",column(3,actionButton(inputId = "mapgen",label= "See Selected Properties")))
         )
       )
     ),
@@ -694,19 +695,22 @@ plot_polygon2 <- function(data,room_type){
 OverviewPrices <- function(){
   fluidPage(
     tagList(
-      div(class = "container",style="margin-bottom:50px;",style="padding:50px;",
+      div(class = "container",style="margin-bottom:30px;",style="padding:50px;",
           h1("Overview of Prices & Flat Availability", class = "title fit-h1"),
           p("Use the maps below to find out how prices and availability of housing vary across districts. You can navigate through the tabs and use the control panel on the left to view data and flat types of your interest. Click on the specific district on the map for more information."),
       )),
-    sidebarPanel(width=3,
+    tags$div(style="margin-left:55px;",
+             sidebarPanel(width=3,
                  radioButtons("leaflet_type","Data Shown",c("Average Price","Availability"))
-    ),
+    )),
     mainPanel(
       
       uiOutput("showleaflet"),
-      tags$div(style="margin-top:20px;",
+      tags$div(style="margin-top:20px; margin-left:15px;",
         p("Want to explore the housing options and facilities available in each district?")),
-      actionButton(inputId = "bttn1",label= "Go to Housing View")
+      tags$div(style="margin-bottom:10px; margin-left:15px;",
+               actionButton(inputId = "bttn1",label= "Go to Housing View"))
+
       
     )
   )
@@ -874,7 +878,10 @@ ui <- fluidPage(HTML(html_fix),theme = "style/style.css",
                                                                       ),
                                                                       tags$div(style="margin-top:20px;",
                                                                                p("Want to compare costs and grants available for your preferred housing?")),
-                                                                      actionButton(inputId = "bttn2",label= "Go to Finance Planning")
+                                                                      tags$div(style="margin-bottom:10px;",
+                                                                      actionButton(inputId = "bttn2",label= "Go to Finance Planning"))
+                                                                      
+                                                            
                                                                     ))),
                            
                                                          # ----------------------------------
@@ -901,6 +908,7 @@ server <- function(input, output,session){
     if (input$marital_status == "Single") {
       fluidPage(  
         fluidRow(
+          helpText("Note: SC = Singapore Citizen"),
           column(width = 6,
                  radioButtons("FTST", "Are you a First-Timer Applicant?",
                               choices=c("Yes","No"))
@@ -909,7 +917,7 @@ server <- function(input, output,session){
                  radioButtons("Nationality", "Nationality Type",choices=c("SC", "Others"))
         ),
         fluidRow(
-          numericInput("NetIncome","Income",value="Enter your income")
+          tags$div(style="margin-left:10px;",column(width=10,numericInput("NetIncome","Income",value="Enter your income")))
         )))} else {
           fluidPage(
             fluidRow(
