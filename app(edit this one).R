@@ -635,6 +635,7 @@ ui <- fluidPage(theme=shinytheme("sandstone"),HTML(html_fix),navbarPage(title = 
                                                          # ----------------------------------
                                                          # tab panel 1 - Home
                                                          tabPanel("Home",
+                                                                  includeHTML("home.html"),
                                                                   tags$script(src = "plugins/scripts.js"),
                                                                   tags$head(
                                                                     tags$link(rel = "stylesheet", 
@@ -643,13 +644,14 @@ ui <- fluidPage(theme=shinytheme("sandstone"),HTML(html_fix),navbarPage(title = 
                                                                     tags$link(rel = "icon", 
                                                                               type = "image/png", 
                                                                               href = "images/logo_icon.png")
-                                                                  ),
-
+                                                                  )),
+                                                         # tab panel 2 
+                                                         tabPanel("Overview",
                                                                   OverviewPrices() #function to display overview of prices on polygons
-                                                         ),
+                                                                  ),
                                                          
                                                          # ----------------------------------
-                                                         # tab panel 2 
+                                                         # tab panel 3 
 
                                                         
                                                          tabPanel("Housing View", value = "housingview",fluid = TRUE, tags$style(button_color_css),
@@ -756,7 +758,7 @@ ui <- fluidPage(theme=shinytheme("sandstone"),HTML(html_fix),navbarPage(title = 
                                                                     ))),
                            
                                                          # ----------------------------------
-                                                         # tab panel 3 
+                                                         # tab panel 4 
                                                          tabPanel("Financial Planning",
                                                                   financePlan() #function to compare financial planning of two flats
                                                          )
