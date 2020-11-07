@@ -42,6 +42,42 @@ resale <- read.csv("Resale_coords.csv")
 resale <- distinct(resale %>% subset(select = -c(`X.1`,X)))
 resale$ID<- paste0("R",seq(1:nrow(resale)))
 resale$Price <- (gsub("[\\$,]", "", resale$Price))
+<<<<<<< Updated upstream
+=======
+
+mop <- read.csv("MOP.csv")
+mop$X <- paste0("M",mop$X)
+mop <- mop %>% rename(ID=X,`Town/Name`=`Town.Name`,`Project Name`=`BTO.Project.Name`,
+                      `Launch Date`=`Launch.Date`,`Year Completed`=`Year.of.Completion`,
+                      `Studio Units`=`No.of.Studio.units`,`2-Room Units`=`No.of.2.room.units`,
+                      `3-Room Units`=`No.of.3.room.units`,`4-Room Units`=`No.of.4.room.units`,
+                      `5-Room Units`=`No.of.5.room.units`, `3Gen Units`=`No.of.3.gen.units`,`Total Units`=`Total.no.of.units`, 
+                      `End of MOP`=`End_of_mop`) %>% subset(select=-c(idMOP))
+
+mop <- mop[,c(1,2,3,4,14,5,6,7,8,9,10,11,12,13,15,16)] %>% select(-Type,Type)
+
+predicted_data <- read_csv("predicted_price.csv")
+
+mop2 <- mop %>% gather(key = "flat_type", value = "num_of_units", c("Studio Units", "2-Room Units", "3-Room Units","4-Room Units", "5-Room Units", "3Gen Units" ))
+mop2$flat_type <- gsub(" Units", "", mop2$flat_type)
+mop2$flat_type <- gsub("Room", "ROOM", mop2$flat_type)
+mop2$flat_type <- gsub("-", " ", mop2$flat_type)
+mop2$flat_type <- gsub("3Gen", "EXECUTIVE", mop2$flat_type)
+mop2$town <- toupper(mop2$`Town/Name`)
+
+
+predicted_data_temp1 <- predicted_data[, c("town", "flat_type", "price1")]
+predicted_data_final <- predicted_data_temp1 %>% group_by(town, flat_type) %>% summarise(price1= mean(price1))
+
+mop <- merge.data.frame(x= mop2, y= predicted_data_final, by = c('flat_type', 'town'), all.x = TRUE) 
+
+mop <- read.csv("MOP_new.csv")
+bto <- read.csv("BTO_new.csv")
+mop$price1 <- round(mop$price1)
+names(bto)[3] <- "Town/Estate"
+
+=======
+>>>>>>> Stashed changes
 resale <- resale %>% select(ID,everything())
 
 mop <- read.csv("MOP_new.csv")
@@ -53,6 +89,10 @@ mop <- mop %>% rename(`Town/Name`=`Town.Name`,`Project Name`=`Project.Name`,
          `Year Completed/ Year to be Complete`, `Price (Predicted)`, `No. of Units`,lon, lat, Type)
 mop$`Flat Type` <- gsub("EXECUTIVE", "Executive", mop$`Flat Type`)
 mop <- mop[!is.na(mop$`Price (Predicted)`),]
+<<<<<<< Updated upstream
+=======
+>>>>>>> 7584fc795d20a1d1cf9d4008c3f57a4a07a7c093
+>>>>>>> Stashed changes
 
 # Primary schools
 schools <- read.csv("Primary Schools.csv")
@@ -386,7 +426,7 @@ bto_breakdown<- function(base_price, income, is_married, citizenship, applicatio
   df[,2] <- types
   df[,3] <- bto_cost_breakdown
   
-  
+
   breakdown_plot <- ggplot(df, aes(fill=type, y=amount, x=total_price)) + 
     geom_bar(position="stack", stat="identity") + 
     geom_text(aes(label = stat(y), group = total_price), stat = 'summary', fun=sum) +  #ADD THE TOTAL SUM ABOVE
@@ -404,6 +444,10 @@ bto_breakdown<- function(base_price, income, is_married, citizenship, applicatio
   
 
 }
+
+
+
+
 
 
 #use the relevant grant calculator
@@ -432,18 +476,18 @@ find_lonlat <- function(ID){
   if((substring(ID, 1, 1)) == 'B'|(substring(ID, 1, 1)) == 'b'){
     
     row_index <- as.numeric(substring(ID, 2, 9))
-    lon <- bto[row_index, 9]
-    lat <- bto[row_index, 10]
+    lon <- bto[row_index, "lon"]
+    lat <- bto[row_index, "lat"]
   }else if((substring(ID, 1, 1)) == 'R'| (substring(ID, 1, 1)) == 'r'){
     
     row_index <- as.numeric(substring(ID, 2, 9))
-    lon <- resale[row_index, 9]
-    lat <- resale[row_index, 10]
+    lon <- resale[row_index, "lon"]
+    lat <- resale[row_index, "lat"]
   }else if((substring(ID, 1, 1)) == 'M'| (substring(ID, 1, 1)) == 'm'){
     
     row_index <- as.numeric(substring(ID, 2, 9))
-    lon <- mop[row_index, 14]
-    lat <- mop[row_index, 15]
+    lon <- mop[row_index, "lon"]
+    lat <- mop[row_index, "lat"]
   }
   return(c(lon,lat))
 }
@@ -474,11 +518,17 @@ find_price <- function(ID){
     price <- as.numeric(format(resale[row_index, "Price"],scientific = F))
     
   }else if ((substring(ID, 1, 1)) == 'M'| (substring(ID, 1, 1)) == 'm'){
+    row_index <- as.numeric(substring(ID, 2, 9))
+    price <- as.numeric(format(mop[row_index, "price1"], scientific = F))
     
-    price <- as.numeric(format(400000, scientific = F))
+  }else if ((substring(ID, 1, 1)) == 'B'| (substring(ID, 1, 1)) == 'b'){
+    row_index <- as.numeric(substring(ID, 2, 9))
+    price <- as.numeric(format(bto[row_index, "price"], scientific = F))
     
-  }else{
-    price <- as.numeric(format(400000, scientific = F))
+  }
+  
+  else{
+    price <- 0
     
   }
   return(price)
