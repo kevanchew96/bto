@@ -350,7 +350,10 @@ resale_breakdown<- function(base_price, income, flat_type, distance_from_p, with
     geom_text(aes(label = stat(y), group = total_price), stat = 'summary', fun=sum) +  #ADD THE TOTAL SUM ABOVE
     ylab("Amount (SG$)") + xlab("") + 
     scale_fill_discrete(name = "Type") + 
-    scale_y_continuous(label=comma) 
+    scale_y_continuous(label=comma) +
+    theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
   
   breakdown <- ggplotly(breakdown_plot)
   
@@ -406,7 +409,10 @@ bto_breakdown<- function(base_price, income, is_married, citizenship, applicatio
     geom_text(aes(label = stat(y), group = total_price), stat = 'summary', fun=sum) +  #ADD THE TOTAL SUM ABOVE
     ylab("Amount (SG$)") + xlab("") + 
     scale_fill_discrete(name = "Type") + 
-    scale_y_continuous(label=comma) 
+    scale_y_continuous(label=comma) +
+    theme(axis.title.x=element_blank(),
+          axis.text.x=element_blank(),
+          axis.ticks.x=element_blank())
   
   breakdown <- ggplotly(breakdown_plot)
   
