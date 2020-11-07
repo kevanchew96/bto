@@ -54,6 +54,21 @@ mop <- mop %>% rename(ID=X,`Town/Name`=`Town.Name`,`Project Name`=`BTO.Project.N
 
 mop <- mop[,c(1,2,3,4,14,5,6,7,8,9,10,11,12,13,15,16)] %>% select(-Type,Type)
 
+predicted_data <- read_csv("predicted_price.csv")
+
+mop2 <- mop %>% gather(key = "flat_type", value = "num_of_units", c("Studio Units", "2-Room Units", "3-Room Units","4-Room Units", "5-Room Units", "3Gen Units" ))
+mop2$flat_type <- gsub(" Units", "", mop2$flat_type)
+mop2$flat_type <- gsub("Room", "ROOM", mop2$flat_type)
+mop2$flat_type <- gsub("-", " ", mop2$flat_type)
+mop2$flat_type <- gsub("3Gen", "EXECUTIVE", mop2$flat_type)
+mop2$town <- toupper(mop2$`Town/Name`)
+
+
+predicted_data_temp1 <- predicted_data[, c("town", "flat_type", "price1")]
+predicted_data_final <- predicted_data_temp1 %>% group_by(town, flat_type) %>% summarise(price1= mean(price1))
+
+mop <- merge.data.frame(x= mop2, y= predicted_data_final, by = c('flat_type', 'town'), all.x = TRUE) 
+
 
 
 # Primary schools
