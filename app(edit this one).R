@@ -31,45 +31,28 @@ resale_avail <- read.csv("Resale_Avail.csv")
 #DATA SOURCE & CLEANING ################################################################################################################################################################
 
 
-bto <- read.csv("BTOPredict.csv")
-bto[6,1] <- 6
-bto[,5] <- NA
-bto$X <- paste0("B",row_number(bto$X))
-bto <- bto %>% rename(ID=X,`Month of Launch`=`Month.of.Launch`,`Town/Estate`=`Town.Estate`,
-                      `Estimated Flats`=`Estimated.Flats`,`2-Room Flexi`=`X2.room.Flexi`,`3-Room`=`X3.room`,
-                      `4-Room`=`X4.room`,`5-Room`=`X5.room`) 
+bto <- read.csv("BTO_new.csv")
+bto <- bto %>% rename(`Month of Launch`=`Month.of.Launch`,`Town/Estate`=`Town.Estate`,
+                      `Estimated Flats`=`Estimated.Flats`,`Flat Type`=flat_type,
+                      `Price (Estimated)`=price) %>% 
+  select(ID, `Month of Launch`, `Town/Estate`, `Flat Type`, `Estimated Flats`, 
+         `Price (Estimated)`, lon, lat, Type)
+
 resale <- read.csv("Resale_coords.csv") 
-resale$X.1 <- paste0("R",resale$X.1)
-resale <- resale %>% rename(ID=X.1) %>% subset(select = -c(X))
+resale <- distinct(resale %>% subset(select = -c(`X.1`,X)))
+resale$ID<- paste0("R",seq(1:nrow(resale)))
 resale$Price <- (gsub("[\\$,]", "", resale$Price))
+resale <- resale %>% select(ID,everything())
 
-mop <- read.csv("MOP.csv")
-mop$X <- paste0("M",mop$X)
-mop <- mop %>% rename(ID=X,`Town/Name`=`Town.Name`,`Project Name`=`BTO.Project.Name`,
-                      `Launch Date`=`Launch.Date`,`Year Completed`=`Year.of.Completion`,
-                      `Studio Units`=`No.of.Studio.units`,`2-Room Units`=`No.of.2.room.units`,
-                      `3-Room Units`=`No.of.3.room.units`,`4-Room Units`=`No.of.4.room.units`,
-                      `5-Room Units`=`No.of.5.room.units`, `3Gen Units`=`No.of.3.gen.units`,`Total Units`=`Total.no.of.units`, 
-                      `End of MOP`=`End_of_mop`) %>% subset(select=-c(idMOP))
-
-mop <- mop[,c(1,2,3,4,14,5,6,7,8,9,10,11,12,13,15,16)] %>% select(-Type,Type)
-
-predicted_data <- read_csv("predicted_price.csv")
-
-mop2 <- mop %>% gather(key = "flat_type", value = "num_of_units", c("Studio Units", "2-Room Units", "3-Room Units","4-Room Units", "5-Room Units", "3Gen Units" ))
-mop2$flat_type <- gsub(" Units", "", mop2$flat_type)
-mop2$flat_type <- gsub("Room", "ROOM", mop2$flat_type)
-mop2$flat_type <- gsub("-", " ", mop2$flat_type)
-mop2$flat_type <- gsub("3Gen", "EXECUTIVE", mop2$flat_type)
-mop2$town <- toupper(mop2$`Town/Name`)
-
-
-predicted_data_temp1 <- predicted_data[, c("town", "flat_type", "price1")]
-predicted_data_final <- predicted_data_temp1 %>% group_by(town, flat_type) %>% summarise(price1= mean(price1))
-
-mop <- merge.data.frame(x= mop2, y= predicted_data_final, by = c('flat_type', 'town'), all.x = TRUE) 
-
-
+mop <- read.csv("MOP_new.csv")
+mop <- mop %>% rename(`Town/Name`=`Town.Name`,`Project Name`=`Project.Name`,
+                      `Launch Date`=`Launch.Date`,`Year Completed/ Year to be Complete`=`Year.Completed`,
+                      `No. of Units`=`Total.Units`, `Flat Type`=flat_type,
+                      `End of MOP`=`End.of.MOP`, `Price (Predicted)`=price1) %>% 
+  select(ID, `Town/Name`, `Project Name`, `End of MOP`, `Flat Type`, 
+         `Year Completed/ Year to be Complete`, `Price (Predicted)`, `No. of Units`,lon, lat, Type)
+mop$`Flat Type` <- gsub("EXECUTIVE", "Executive", mop$`Flat Type`)
+mop <- mop[!is.na(mop$`Price (Predicted)`),]
 
 # Primary schools
 schools <- read.csv("Primary Schools.csv")
@@ -693,27 +676,27 @@ ui <- fluidPage(HTML(html_fix),theme = "style/style.css",
                                                                       titlePanel("Choose Characteristics"),
                                                                       fluidRow(column(12,
                                                                                       
-                                                                                      # Select which area to view
-                                                                                      radioButtons(inputId = "AreaView",
-                                                                                                   label = "Select Area to View",
-                                                                                                   choices = c("None Selected","A", "B")),
-                                                                                      
-                                                                                      
-                                                                                      # Select which Housing Type to plot
                                                                                       radioButtons(inputId = "HousingType",
                                                                                                    label = "Select Housing Type:",
                                                                                                    choices = c("BTO" = "BTO", 
                                                                                                                "Resale" = "Resale",
                                                                                                                "BTO reaching MOP soon" = "MOP"),
                                                                                                    selected = "BTO"),
+                                                                                      conditionalPanel(
+                                                                                        condition = "input.HousingType == 'Resale'",
+                                                                                        radioButtons(inputId = "RoomType",
+                                                                                                     label = "Select Type of Room for Resale:",
+                                                                                                     choices = c("2-Room", "3-Room", "4-Room",
+                                                                                                                 "5-Room"),
+                                                                                                     selected = "2-Room")),
+                                                                                      conditionalPanel(
+                                                                                        condition = "input.HousingType == 'MOP'",
+                                                                                        radioButtons(inputId = "RoomType2",
+                                                                                                     label = "Select Type of Room for MOP:",
+                                                                                                     choices = c("2-Room", "3-Room", "4-Room",
+                                                                                                                 "5-Room", "Executive"),
+                                                                                                     selected = "2-Room")),
                                                                                       actionButton("goButton", "Go!"),
-                                                                                      # Select which Type of Room(s) to plot   
-                                                                                      radioButtons(inputId = "RoomType",
-                                                                                                   label = "Select Type of Room for Resale:",
-                                                                                                   choices = c("2-Room", "3-Room", "4-Room",
-                                                                                                               "5-Room"),
-                                                                                                   selected = "2-Room"),
-                                                                                      actionButton("goButton2", "Go!")
                                                                       )),
                                                                       
                                                                       fluidRow(column(12,
@@ -1075,72 +1058,24 @@ server <- function(input, output,session){
     }  
   })
   
-  # BTO reactive function
-  BTO <- reactive({
-    req(input$HousingType)
-    filter(bto, Type %in% input$HousingType) 
-  })
-  
-  observe({
-    if(nrow(BTO())==0)
-    {
-      leafletProxy("map") %>%
-        clearGroup("BTO")
-    }
-    else
-    {
-      leafletProxy("map") %>%
-        clearGroup("BTO") %>%
-        addMarkers(data=BTO(),~lon,~lat,popup = ~`Town/Estate`, group="BTO", 
-                   icon=makeIcon("BTO.png",iconWidth=30, iconHeight=30),layerId=~`Town/Estate`)  
-    }
-  })
-  
-  # Resale reactive function
-  Resale <- reactive({
-    req(input$HousingType)
-    req(input$RoomType)
-    filter(resale, Room %in% input$RoomType) %>%
-      filter(Type %in% input$HousingType)
-  })
-  
-  
-  observe({
-    if(nrow(Resale())==0)
-    {
-      leafletProxy("map") %>%
-        clearGroup("Resale")
-    }
-    else
-    {
-      leafletProxy("map") %>%
-        clearGroup("Resale") %>% 
-        addMarkers(data=Resale(),~lon,~lat,group="Resale", 
-                   icon=makeIcon("Resale.png",iconWidth=30, iconHeight=30),layerId=~Address)
-    }
-  })
-  
-  
-  # MOP reactive function
-  MOP <- reactive({
-    req(input$HousingType)
-    filter(mop, Type %in% input$HousingType) 
-  })
-  
-  
-  observe({
-    if(nrow(MOP())==0)
-    {
-      leafletProxy("map") %>%
-        clearGroup("MOP")
-    }
-    else
-    {
-      leafletProxy("map") %>%
-        clearGroup("MOP") %>%
-        addMarkers(data=MOP(),~lon,~lat,group="MOP", 
-                   icon=makeIcon("MOP.png",iconWidth=30, iconHeight=30),layerId=~`Project Name`)
-    }
+  # Plot houses on leaflet output
+  observeEvent(input$goButton, {
+    type <- input$HousingType
+    bto <- filter(bto, Type %in% type) 
+    resale <- filter(resale, Type %in% type) %>% filter(Room %in% input$RoomType)
+    mop <- filter(mop, Type %in% type) %>% filter(`Flat Type` %in% input$RoomType2)
+    
+    leafletProxy("map") %>%
+      clearGroup("BTO") %>%
+      clearGroup("Resale") %>%
+      clearGroup("MOP") %>%
+      addMarkers(data=bto,~lon,~lat,popup = ~`Town/Estate`, group="BTO", 
+                 icon=makeIcon("BTO.png",iconWidth=30, iconHeight=30),layerId=~`Town/Estate`) %>%
+      addMarkers(data=resale,~lon,~lat,group="Resale", 
+                 icon=makeIcon("Resale.png",iconWidth=30, iconHeight=30),layerId=~Address) %>%
+      addMarkers(data=mop,~lon,~lat,group="MOP", 
+                 icon=makeIcon("MOP.png",iconWidth=30, iconHeight=30),layerId=~`Project Name`)
+    
   })
   
   # Datatables for the 3 types of properties 
@@ -1156,19 +1091,19 @@ server <- function(input, output,session){
         if (data$id %in% bto$`Town/Estate`)
         {
           return(
-            datatable(filter(BTO()[,1:8], `Town/Estate` == data$id))
+            datatable(filter(bto[,1:6], `Town/Estate` == data$id))
           )
         }
         else if (data$id %in% resale$Address)
         {
           return(
-            datatable(filter(Resale()[,1:7], Address == data$id))
+            datatable(filter(resale[,1:7], Address == data$id))
           )
         }
         else if (data$id %in% mop$`Project Name`)
         {
           return(
-            datatable(filter(MOP()[,1:13], `Project Name` == data$id))
+            datatable(filter(mop[,1:8], `Project Name` == data$id))
           )
         }
       })
