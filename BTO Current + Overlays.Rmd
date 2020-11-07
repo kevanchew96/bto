@@ -351,8 +351,29 @@ mop <- mop %>% rename(`Town/Name`=`Town.Name`,`Project Name`=`Project.Name`,
          `Year Completed/ Year to be Complete`, `Price (Predicted)`, `No. of Units`,lon, lat, Type)
 
 mop$`Flat Type` <- gsub("EXECUTIVE", "Executive", mop$`Flat Type`)
-bto
+
 mop <- mop[!is.na(mop$`Price (Predicted)`),]
 mop
-resale
+resale$Room <- as.factor(resale$Room)
+levels(resale$Room)
+bto
+```
+```{r}
+library(rvest)
+url <- "https://www.ura.gov.sg/realEstateIIWeb/resources/misc/list_of_postal_districts.htm"
+page <- read_html(url)
+tab <- html_nodes(page, "table")
+df <- as.data.frame(html_table(tab))
+df <- df %>% select(X1,X3) %>% rename(`Postal District`=X1, `General Area`=X3) %>% .[2:29,]
+df$`General Area` <- gsub("\r","",df$`General Area`)
+df$`General Area` <- gsub("\n","",df$`General Area`)
+df$`General Area` <- paste0(df$`General Area`,", Singapore")
+df2 <- geocode(location = df[,2], output = "latlona", source = "google")
+df <- df %>% cbind(df2)
+df$`Postal District`<- as.integer(df$`Postal District`)
+df
+write.csv(df,"Districts.csv")
+districts <- read.csv("Districts.csv")
+districts[1,4]
+districts[1,5]
 ```
