@@ -570,7 +570,7 @@ plot_polygon <- function(data,room_type){
   data_out <- data.frame(Postal_District = seq(1,28,1))
   data_out <- left_join(data_out,data1_reg)
   
-  shapeData <- readOGR(dsn="C:\\Users\\jeanl\\Documents\\GitHub\\bto",layer="districts")
+  shapeData <- readOGR(dsn=".",layer="districts")
   data_plot <- merge(shapeData,data_out,by.x="PLN_AREA_N",by.y="Postal_District")
 
   popup <- paste0("<b>","District: ","</b>",data_plot$PLN_AREA_N,"<br/>",
@@ -589,7 +589,7 @@ plot_polygon <- function(data,room_type){
 plot_polygon2 <- function(data,room_type){
   data1 <- data %>% filter(Room==room_type)
   
-  shapeData <- readOGR(dsn="",layer="districts")
+  shapeData <- readOGR(dsn=".",layer="districts")
   data_plot <- merge(shapeData,data1,by.x="PLN_AREA_N",by.y="Postal_District")
   
   popup <- paste0("<b>","District: ","</b>",data_plot$PLN_AREA_N,"<br/>",
