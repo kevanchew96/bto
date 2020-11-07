@@ -508,11 +508,11 @@ find_price <- function(ID){
 financePlan <- function(){
   fluidPage(
     tagList(
-      div(class = "container",
+      div(class = "container",style="margin-bottom:50px;",
           h1("Financial Planning", class = "title fit-h1"),
-          p("You have already identified two apartments of interest, but cannot decide which one to buy? Let us help make your final decision."),
-          p("Enter your personal details to see what grants you can qualify for."),
-          p("Then, enter the addresses and flat types of the apartments you have in mind and we will show you the price breakdown for each apartment"),
+          p("You have already identified two apartments of interest, but cannot decide which one to buy? Let us help make your final decision.
+          Enter your personal details to see what grants you can qualify for. 
+          Then, enter the addresses and flat types of the apartments you have in mind and we will show you the price breakdown for each apartment."),
       )
     ),
     tags$h4("Enter your details"),
@@ -589,7 +589,7 @@ plot_polygon <- function(data,room_type){
 plot_polygon2 <- function(data,room_type){
   data1 <- data %>% filter(Room==room_type)
   
-  shapeData <- readOGR(dsn="C:\\Users\\jeanl\\Documents\\GitHub\\bto",layer="districts")
+  shapeData <- readOGR(dsn="",layer="districts")
   data_plot <- merge(shapeData,data1,by.x="PLN_AREA_N",by.y="Postal_District")
   
   popup <- paste0("<b>","District: ","</b>",data_plot$PLN_AREA_N,"<br/>",
@@ -609,11 +609,9 @@ plot_polygon2 <- function(data,room_type){
 OverviewPrices <- function(){
   fluidPage(
     tagList(
-      div(class = "container",style="margin-bottom:50px;",
+      div(class = "container",style="margin-bottom:50px;",style="padding:50px;",
           h1("Overview of Prices & Flat Availability", class = "title fit-h1"),
-          p("Use the maps below to find out how prices and availability of housing vary across districts"),
-          p("You can navigate through the tabs and use the control panel on the left to view data and flat types of your interest."),
-          p("Click on the specific district on the map for more information"),
+          p("Use the maps below to find out how prices and availability of housing vary across districts. You can navigate through the tabs and use the control panel on the left to view data and flat types of your interest. Click on the specific district on the map for more information."),
       )),
     sidebarPanel(width=3,
                  radioButtons("leaflet_type","Data Shown",c("Average Price","Availability"))
@@ -650,7 +648,8 @@ font-size: 15px;
 css_fix <- "div.info.legend.leaflet-control br {clear: both;}"
 html_fix <- as.character(htmltools::tags$style(type = "text/css", css_fix))
 
-ui <- fluidPage(theme=shinytheme("sandstone"),HTML(html_fix),navbarPage(title = "AppName", id="navbar",fluid = TRUE, 
+ui <- fluidPage(HTML(html_fix),theme = "style/style.css",
+                navbarPage(title = "AppName", id="navbar",fluid = TRUE, 
                                                          collapsible = TRUE,
                                                          
                                                          # ----------------------------------
@@ -676,6 +675,18 @@ ui <- fluidPage(theme=shinytheme("sandstone"),HTML(html_fix),navbarPage(title = 
 
                                                         
                                                          tabPanel("Housing View", value = "housingview",fluid = TRUE, tags$style(button_color_css),
+                                                                  tagList(
+                                                                    div(class = "container",style="margin-bottom:50px;",
+                                                                        h1("Housing View", class = "title fit-h1"),
+                                                                        p("Using the controls on the left, select your preferred housing district. 
+                                                                          You may then proceed to select the housing and flat type of your interest. 
+                                                                          Markers will be shown on the map for housing options that match your selections. 
+                                                                          Facilities nearby will also be shown. 
+                                                                          You can click on the markers for more information on the housing options and facilities."),
+                                                                        p("If you are intending to find a flat near your parents' house, enter your parents' address on the left panel.
+                                                                          Housing options within 2km radius of your parents' house will be highlighted.")
+                                                                    )
+                                                                  ),
                                                                   sidebarLayout(
                                                                     sidebarPanel(
                                                                       
@@ -775,12 +786,15 @@ ui <- fluidPage(theme=shinytheme("sandstone"),HTML(html_fix),navbarPage(title = 
                                                                       br(),
                                                                       fluidRow(
                                                                         withSpinner(dataTableOutput(outputId = "PropertyFinder")),
-                                                                      )
+                                                                      ),
+                                                                      tags$div(style="margin-top:20px;",
+                                                                               p("Want to compare costs and grants available for your preferred housing?")),
+                                                                      actionButton(inputId = "bttn2",label= "Go to Finance Planning")
                                                                     ))),
                            
                                                          # ----------------------------------
                                                          # tab panel 4 
-                                                         tabPanel("Financial Planning",
+                                                         tabPanel("Financial Planning",value = "financeplanning",
                                                                   financePlan() #function to compare financial planning of two flats
                                                          )
 ))
@@ -907,6 +921,10 @@ server <- function(input, output,session){
   
   observeEvent(input$bttn1, {
     updateTabsetPanel(session, inputId = "navbar", selected = "housingview")
+  })
+  
+  observeEvent(input$bttn2, {
+    updateTabsetPanel(session, inputId = "navbar", selected = "financeplanning")
   })
 
   
