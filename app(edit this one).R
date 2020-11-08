@@ -47,7 +47,6 @@ resale$Year <- gsub("Built-", "", resale$Year)
 resale <- resale %>% rename(`Flat Type`=Room, `Year Built`=Year)
 resale$Area <- gsub("[(Built)]","",resale$Area)
 
-
 mop <- read.csv("MOP_new.csv")
 mop <- mop %>% rename(`Town/Name`=`Town.Name`,`Project Name`=`Project.Name`,
                       `Launch Date`=`Launch.Date`,`Year Completed/ Year to be Complete`=`Year.Completed`,
@@ -64,6 +63,7 @@ mop$`Predicted Price` <- round(mop$`Predicted Price`)
 districts <- read.csv("Districts.csv")
 districts$Combined <- paste0(districts$Postal.District," - ", districts$General.Area)
 districts$Combined <- gsub(", Singapore", "",districts$Combined)
+
 
 # Primary schools
 schools <- read.csv("Primary Schools.csv")
@@ -496,11 +496,11 @@ find_price <- function(ID){
     
   }else if ((substring(ID, 1, 1)) == 'M'| (substring(ID, 1, 1)) == 'm'){
     row_index <- as.numeric(substring(ID, 2, 9))
-    price <- as.numeric(format(mop[row_index, 'Price (Predicted)'], scientific = F))
+    price <- as.numeric(format(mop[row_index, 'Predicted Price'], scientific = F))
     
   }else if ((substring(ID, 1, 1)) == 'B'| (substring(ID, 1, 1)) == 'b'){
     row_index <- as.numeric(substring(ID, 2, 9))
-    price <- as.numeric(format(bto[row_index, "price"], scientific = F))
+    price <- as.numeric(format(bto[row_index, "Estimated Price"], scientific = F))
     
   }
   
@@ -608,7 +608,10 @@ financePlan <- function(){
                textInput("home_type_2","Second Apartment ID",value="")
         ),
         fluidRow(
-          tags$div(style="margin-left:15px;",column(3,actionButton(inputId = "mapgen",label= "See Selected Properties")))
+          tags$div(style="margin-left:15px;",
+          column(3,actionButton(inputId = "mapgen",label= "See Selected Properties")
+        ),
+          actionButton(inputId = "mapreset",label= "Reset"))
         )
       )
     ),
@@ -621,6 +624,7 @@ financePlan <- function(){
     column(width = 6,plotlyOutput("price_grant_barchart_2"))
   )
   )
+  
   
 }
 
@@ -1044,11 +1048,16 @@ server <- function(input, output,session){
     
     leafletProxy("leaflet_parents") %>%
   
-      addMarkers(lat = as.numeric(property1[2]), lng = as.numeric(property1[1]), popup = find_address(input$home_type_1)) %>%
-      addMarkers(lat = as.numeric(property2[2]), lng = as.numeric(property2[1]), popup = find_address(input$home_type_2)) %>%
-      addMarkers(lat = as.numeric(parents_add[2]),lng = as.numeric(parents_add[1]), popup = "Your Parents' Home") %>%
-      addCircles(lat = as.numeric(parents_add[2]),lng = as.numeric(parents_add[1]), radius= 2000,fillOpacity=0.1, layerId="x")
  
+    
+    
+    addMarkers(lat = as.numeric(property1[2]), lng = as.numeric(property1[1]), popup = find_address(input$home_type_1), layerId = "1") %>%
+    addMarkers(lat = as.numeric(property2[2]), lng = as.numeric(property2[1]), popup = find_address(input$home_type_2), layerId = "2") %>%
+    addMarkers(lat = as.numeric(parents_add[2]),lng = as.numeric(parents_add[1]), popup = "Your Parents' Home", layerId = "3") %>%
+    addCircles(lat = as.numeric(parents_add[2]),lng = as.numeric(parents_add[1]), radius= 2000,fillOpacity=0.1, layerId="c")
+    
+    
+    
     
     #Grant Breakdown
     
@@ -1082,6 +1091,20 @@ server <- function(input, output,session){
       }
       )
      })
+  
+  
+  
+  observeEvent(input$mapreset,{
+    if(input$mapreset)
+    {
+      leafletProxy("leaflet_parents") %>%
+        removeShape("c") %>%
+        removeMarker("1") %>%
+        removeMarker("2") %>%
+        removeMarker("3")
+    }  
+  })
+  
 
   # Base map with layers
 html_legend <- "<img src='https://www.flaticon.com/svg/static/icons/svg/2987/2987903.svg'style='width:10px;height:10px;'>&nbsp Primary School<br/>
