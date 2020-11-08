@@ -621,10 +621,15 @@ financePlan <- function(){
     tags$h4("Your Selected Properties"),
     leafletOutput("leaflet_parents"),
     tags$h4("Financial Breakdown"),
+    br(),
     fluidRow(
   
-    column(width = 6,plotlyOutput("price_grant_barchart_1")),
-    column(width = 6,plotlyOutput("price_grant_barchart_2"))
+    column(width = 6,
+           textOutput(outputId = "property_name_1"),
+           plotlyOutput("price_grant_barchart_1")),
+    column(width = 6,
+           textOutput(outputId = "property_name_2"),
+           plotlyOutput("price_grant_barchart_2"))
   )
   )
   
@@ -1061,8 +1066,12 @@ server <- function(input, output,session){
     
     
     
+    output$property_name_1 <- renderText({
+      find_address(input$home_type_1)
+    })
     
-    #Grant Breakdown
+  
+    
     
     output$price_grant_barchart_1 <- renderPlotly( {
       
@@ -1078,6 +1087,11 @@ server <- function(input, output,session){
       
     }
     )
+    
+    output$property_name_2 <- renderText({
+      find_address(input$home_type_2)
+    })
+    
 
     output$price_grant_barchart_2 <- 
       renderPlotly( {
