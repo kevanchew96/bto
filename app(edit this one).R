@@ -488,8 +488,8 @@ measure_distance_from_p <- function(parent_postal_code, your_lon_lat){  #your_lo
 #find the price for the relevant property
 
 find_price <- function(ID){
-  ID_char <- as.character(ID)
-  if((substring(ID, 1, 1)) == 'R'|(substring(ID, 1, 1)) == 'r'){
+
+    if((substring(ID, 1, 1)) == 'R'|(substring(ID, 1, 1)) == 'r'){
     
     row_index <- as.numeric(substring(ID, 2, 9))
     price <- as.numeric(format(resale[row_index, "Price"],scientific = F))
@@ -511,6 +511,9 @@ find_price <- function(ID){
   return(price)
 }
 
+
+
+
 #Find room-type for relevant property
 
 find_room <- function(ID){
@@ -518,7 +521,7 @@ find_room <- function(ID){
   if((substring(ID, 1, 1)) == 'R'|(substring(ID, 1, 1)) == 'r'){
     
     row_index <- as.numeric(substring(ID, 2, 9))
-    room_type <- resale[row_index, "Room"]
+    room_type <- resale[row_index, "Flat Type"]
     
   }else if ((substring(ID, 1, 1)) == 'M'| (substring(ID, 1, 1)) == 'm'){
     row_index <- as.numeric(substring(ID, 2, 9))
