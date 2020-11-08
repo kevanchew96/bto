@@ -529,7 +529,7 @@ find_room <- function(ID){
     
   }else if ((substring(ID, 1, 1)) == 'B'| (substring(ID, 1, 1)) == 'b'){
     row_index <- as.numeric(substring(ID, 2, 9))
-    room_type <- bto[row_index, "flat_type"]
+    room_type <- bto[row_index, "Flat Type"]
     
   }
   
@@ -619,6 +619,7 @@ financePlan <- function(){
       )
     ),
     tags$h4("Your Selected Properties"),
+    br(),
     leafletOutput("leaflet_parents"),
     tags$h4("Financial Breakdown"),
     br(),
@@ -1067,7 +1068,7 @@ server <- function(input, output,session){
     
     
     output$property_name_1 <- renderText({
-      find_address(input$home_type_1)
+      paste(find_address(input$home_type_1),find_room(input$home_type_1), sep = " ")
     })
     
   
@@ -1089,7 +1090,7 @@ server <- function(input, output,session){
     )
     
     output$property_name_2 <- renderText({
-      find_address(input$home_type_2)
+      paste(find_address(input$home_type_2),find_room(input$home_type_2), sep = " ")
     })
     
 
