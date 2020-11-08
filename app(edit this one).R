@@ -340,7 +340,7 @@ resale_breakdown<- function(base_price, income, flat_type, distance_from_p, with
   
   
   breakdown_plot <- ggplot(df, aes(fill=type, y=amount, x=total_price)) + 
-    geom_bar(position=position_stack(reverse = TRUE), stat="identity", width = 0.7) + 
+    geom_bar(position=position_stack(reverse = TRUE), stat="identity", width = 1) + 
     geom_text(aes(label = stat(y), group = total_price), stat = 'summary', fun=sum) +  #ADD THE TOTAL SUM ABOVE
     ylab("Amount (SG$)") + xlab("") + 
     scale_fill_discrete(name = "Type") +
@@ -400,7 +400,7 @@ bto_breakdown<- function(base_price, income, is_married, citizenship, applicatio
   
   
   breakdown_plot <- ggplot(df, aes(fill=type, y=amount, x=total_price)) + 
-    geom_bar(position=position_stack(reverse = TRUE), stat="identity", width = 0.7) + 
+    geom_bar(position=position_stack(reverse = TRUE), stat="identity", width = 1) + 
     geom_text(aes(label = stat(y), group = total_price), stat = 'summary', fun=sum, position=position_dodge(width=0.9)) +  #ADD THE TOTAL SUM ABOVE
     ylab("Amount (SG$)") + xlab("") + 
     scale_fill_discrete(name = "Type") + 
