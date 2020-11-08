@@ -46,6 +46,7 @@ resale <- resale %>% select(ID,everything())
 resale$Year <- gsub("Built-", "", resale$Year)
 resale <- resale %>% rename(`Flat Type`=Room, `Year Built`=Year)
 resale$Area <- gsub("[(Built)]","",resale$Area)
+resale$`Flat Type` <- gsub("Multi-Gen/Jumbo","Multi-Generation",resale$`Flat Type`)
 
 mop <- read.csv("MOP_new.csv")
 mop <- mop %>% rename(`Town/Name`=`Town.Name`,`Project Name`=`Project.Name`,
@@ -601,7 +602,7 @@ financePlan <- function(){
     tagList(
       div(class = "container",style="margin-bottom:50px;",
           h1("Financial Planning", class = "title fit-h1"),
-          p("You have already identified two apartments of interest, but cannot decide which one to buy? Let us help make your final decision.
+          p("You have already identified some apartments of interest, but cannot decide which one to buy? Let us help make your final decision.
           Enter your personal details to see what grants you can qualify for. 
           Then, enter the Apartment IDs that you have noted down from the Housing View Page."),
       )
@@ -807,7 +808,7 @@ ui <- fluidPage(HTML(html_fix),theme = "style/style.css",tags$head(
                                                                       titlePanel("Housing Type"),
                                                                       fluidRow(column(12,
                                                                                       selectizeInput(inputId = "AreaView",
-                                                                                                  label = "Select Area to View:",
+                                                                                                  label = "Select District to View:",
                                                                                                   choices = districts$Combined,
                                                                                                   selected = districts$Combined[1]),
                                                                                       actionButton(inputId = "goButton", label = "View"),
@@ -822,7 +823,7 @@ ui <- fluidPage(HTML(html_fix),theme = "style/style.css",tags$head(
                                                                                         radioButtons(inputId = "RoomType",
                                                                                                      label = "Select Type of Room for Resale:",
                                                                                                      choices = c("1-Room", "2-Room", "3-Room", "4-Room",
-                                                                                                                 "5-Room", "Executive", "Multi-Gen/Jumbo"), 
+                                                                                                                 "5-Room", "HDB Executive", "Multi-Generation"), 
                                                                                                      selected = "2-Room")),
                                                                                       conditionalPanel(
                                                                                         condition = "input.HousingType == 'MOP'",
@@ -887,7 +888,7 @@ ui <- fluidPage(HTML(html_fix),theme = "style/style.css",tags$head(
                                                                       
                                                                       conditionalPanel(
                                                                         condition = "output.parents_full_address",
-                                                                        actionButton(inputId = "FinderClear", label = "Clear Address(es)")),
+                                                                        actionButton(inputId = "FinderClear", label = "Clear Address")),
                                                                     
                                                                     fluidRow(column(12,
                                                                                     helpText("Fill in school you would like to view"))),
@@ -915,7 +916,7 @@ ui <- fluidPage(HTML(html_fix),theme = "style/style.css",tags$head(
                                                  see detailed information about them below")
                                                                       ), 
                                                                       column(12,
-                                                                             helpText("Tip: You may toggle on/off non-housing markers using the UI at the top right")),
+                                                                             helpText("Tip: You may toggle on/off non-housing markers using the interface at the top right")),
                                                                       column(12,  
                                                                              helpText("Note that MOP houses will
                                                  only be on the resale market after a certain number 
@@ -1168,15 +1169,17 @@ html_legend <- "<img src='https://www.flaticon.com/svg/static/icons/svg/2987/298
 
 <img src='https://www.flaticon.com/svg/static/icons/svg/3104/3104941.svg'style='width:10px;height:10px;'>&nbsp Park<br/>
 
-<img src='https://www.flaticon.com/svg/static/icons/svg/1189/1189136.svg'style='width:10px;height:10px;'>&nbsp Community Centre<br/>
+<img src='https://www.flaticon.com/svg/static/icons/svg/1189/1189136.svg'style='width:10px;height:10px;'>&nbsp Community Club<br/>
 
 <img src='https://www.flaticon.com/svg/static/icons/svg/821/821354.svg'style='width:10px;height:10px;'>&nbsp MRT<br/>
 
 <img src='https://www.flaticon.com/svg/static/icons/svg/2451/2451622.svg'style='width:10px;height:10px;'>&nbsp BTO<br/>
 
-<img src='https://www.flaticon.com/svg/static/icons/svg/3523/3523344.svg'style='width:10px;height:10px;'>&nbsp Resale<br/>
+<img src='https://www.flaticon.com/svg/static/icons/svg/2590/2590591.svg'style='width:10px;height:10px;'>&nbsp Resale<br/>
 
-<img src='https://www.flaticon.com/svg/static/icons/svg/3523/3523064.svg'style='width:10px;height:10px;'>&nbsp MOP Soon<br/>"
+<img src='https://www.flaticon.com/svg/static/icons/svg/3523/3523064.svg'style='width:10px;height:10px;'>&nbsp MOP Soon<br/>
+
+<img src='https://www.flaticon.com/svg/static/icons/svg/3014/3014764.svg'style='width:10px;height:10px;'>&nbsp Parents' House"
   output$map <- renderLeaflet(
     {
       leaflet() %>% 
@@ -1187,11 +1190,12 @@ html_legend <- "<img src='https://www.flaticon.com/svg/static/icons/svg/2987/298
         addMarkers(data=parks, label = ~Description,  
                    icon=makeIcon("Park.png",iconWidth=25, iconHeight=25), group="Parks") %>%
         addMarkers(data=ccs, label = ~Description, 
-                   icon=makeIcon("CCs.png",iconWidth=25, iconHeight=25), group="Community Centres") %>%
+                   icon=makeIcon("CCs.png",iconWidth=25, iconHeight=25), group="Community Clubs") %>%
         addMarkers(data=mrt, label = ~final,
                    icon=makeIcon("Train.png",iconWidth=25, iconHeight=25), group="MRTs") %>%
-        addLayersControl(overlayGroups=c("Primary Schools","Parks","Community Centres","MRTs")) %>%
-        addControl(html=html_legend,position = "bottomright")
+        addLayersControl(overlayGroups=c("Primary Schools","Parks","Community Clubs","MRTs")) %>%
+        addControl(html=html_legend,position = "bottomright") %>%
+        hideGroup(c("Parks","Community Clubs","MRTs"))
     })
   
   # Set view to area
@@ -1239,7 +1243,7 @@ html_legend <- "<img src='https://www.flaticon.com/svg/static/icons/svg/2987/298
       address <- google_geocode(address = parents_address)
       coords <- geocode_coordinates(address)  
       leafletProxy("map") %>% 
-        addCircles(data=coords,~lng,~lat,radius=2000,fillOpacity=0.1, layerId="x") %>% 
+        addCircles(data=coords,~lng,~lat,radius=4000,fillOpacity=0.1, layerId="x") %>% 
         addMarkers(data=coords,~lng,~lat, label="Your Parents' House",
                    icon=makeIcon("Parents' House.png",iconWidth=12, iconHeight=12),layerId="y")
     }
