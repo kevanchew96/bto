@@ -1061,14 +1061,10 @@ server <- function(input, output,session){
   
 
   
-
-  
   #Financial Planning Map
   
   output$leaflet_parents <- renderLeaflet(
     {
-
-      
       leaflet() %>% 
       addTiles() %>%  
        setView(lng = 103.803214, lat = 1.368063, zoom = 11)
