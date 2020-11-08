@@ -568,6 +568,29 @@ find_address <- function(ID){
 }
 
 
+#Match correct icon for relevant property
+
+find_icon <- function(ID){
+  
+  if((substring(ID, 1, 1)) == 'R'|(substring(ID, 1, 1)) == 'r'){
+    
+   icon_prop <- "Resale.png"
+    
+  }else if ((substring(ID, 1, 1)) == 'M'| (substring(ID, 1, 1)) == 'm'){
+   icon_prop <- "MOP.png"
+    
+  }else if ((substring(ID, 1, 1)) == 'B'| (substring(ID, 1, 1)) == 'b'){
+    icon_prop <- "BTO.png"
+    
+  }
+  
+  else{
+    icon_prop <- NA
+    
+  }
+  return(icon_prop)
+}
+
 
 ####################  UI FUNCTIONS #####################################################################################
 
@@ -1060,9 +1083,9 @@ server <- function(input, output,session){
  
     
     
-    addMarkers(lat = as.numeric(property1[2]), lng = as.numeric(property1[1]), popup = find_address(input$home_type_1), layerId = "1") %>%
-    addMarkers(lat = as.numeric(property2[2]), lng = as.numeric(property2[1]), popup = find_address(input$home_type_2), layerId = "2") %>%
-    addMarkers(lat = as.numeric(parents_add[2]),lng = as.numeric(parents_add[1]), popup = "Your Parents' Home", layerId = "3") %>%
+    addMarkers(lat = as.numeric(property1[2]), lng = as.numeric(property1[1]), popup = find_address(input$home_type_1), icon=makeIcon(find_icon(input$home_type_1),iconWidth=25, iconHeight=25), layerId = "1") %>%
+    addMarkers(lat = as.numeric(property2[2]), lng = as.numeric(property2[1]), popup = find_address(input$home_type_2), icon=makeIcon(find_icon(input$home_type_2),iconWidth=25, iconHeight=25), layerId = "2") %>%
+    addMarkers(lat = as.numeric(parents_add[2]),lng = as.numeric(parents_add[1]), popup = "Your Parents' Home", icon=makeIcon("Parents' House.png",iconWidth=25, iconHeight=25), layerId = "3") %>%
     addCircles(lat = as.numeric(parents_add[2]),lng = as.numeric(parents_add[1]), radius= 2000,fillOpacity=0.1, layerId="c")
     
     
