@@ -629,10 +629,16 @@ financePlan <- function(){
       fluidRow(
         tags$div(style="margin-left:10px;",helpText("Note: You can get the Apartment IDs from the table in the Housing View Page.")),
         column(width=6,
-               textInput("home_type_1","First Apartment ID",value="")
+               selectizeInput(inputId = "home_type_1",
+                              label = "First Apartment ID",
+                              choices = c(bto$ID,resale$ID,mop$ID),
+                              selected = bto$ID[1])
         ),
         column(width=6,
-               textInput("home_type_2","Second Apartment ID",value="")
+               selectizeInput(inputId = "home_type_2",
+                              label = "Second Apartment ID",
+                              choices = c(bto$ID,resale$ID,mop$ID),
+                              selected = bto$ID[1])
         ),
         fluidRow(
           tags$div(style="margin-left:15px;",
