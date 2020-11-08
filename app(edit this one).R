@@ -1071,10 +1071,14 @@ server <- function(input, output,session){
     })
   
   
-
+  `%then%` <- shiny:::`%OR%`
+  
 
   
   observeEvent(input$mapgen, {
+    
+
+
     property1 <- find_lonlat(input$home_type_1)
     property2 <- find_lonlat(input$home_type_2)
     parents_add <- geocode(paste("Singapore", as.character(input$parent_address)))
