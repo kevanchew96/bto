@@ -1071,8 +1071,7 @@ server <- function(input, output,session){
     })
   
   
-  `%then%` <- shiny:::`%OR%`
-  
+
 
   
   observeEvent(input$mapgen, {
