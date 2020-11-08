@@ -641,10 +641,12 @@ financePlan <- function(){
                               selected = bto$ID[1])
         ),
         fluidRow(
-          tags$div(style="margin-left:15px;",
+          tags$div(style="margin-left:15px; display: inline-block;",
           column(3,actionButton(inputId = "mapgen",label= "See Selected Properties")
-        ),
-          actionButton(inputId = "mapreset",label= "Reset"))
+        )),
+          tags$div(style="display: inline-block;", 
+                   column(4,actionButton(inputId = "mapreset",label= "Reset"))
+          )
         )
       )
     ),
@@ -715,7 +717,7 @@ OverviewPrices <- function(){
     tagList(
       div(class = "container",style="margin-bottom:30px;",style="padding:50px;",
           h1("Overview of Prices & Flat Availability", class = "title fit-h1"),
-          p("Use the maps below to find out how prices and availability of housing vary across districts. You can navigate through the tabs and use the control panel on the left to view data and flat types of your interest. Click on the specific district on the map for more information."),
+          p("Use the maps below to find out how prices and availability of resale housing vary across districts. You can navigate through the tabs and use the control panel on the left to view data and flat types of your interest. Click on the specific district on the map for more information."),
       )),
     tags$div(style="margin-left:55px;",
              sidebarPanel(width=3,
@@ -745,19 +747,23 @@ font-size: 15px;
 }"
 
 
+#To format legend for polygon leaflets 
+css_fix <- "div.info.legend.leaflet-control br {clear: both;}"
+html_fix <- as.character(htmltools::tags$style(type = "text/css", css_fix))
+
+
 ###################################################################################################################################################################
 ############   UI STARTS HERE   ###################################################################################################################################
 
 
 
-
-#To format legend for polygon leaflets 
-css_fix <- "div.info.legend.leaflet-control br {clear: both;}"
-html_fix <- as.character(htmltools::tags$style(type = "text/css", css_fix))
-
-ui <- fluidPage(HTML(html_fix),theme = "style/style.css",
-                navbarPage(title = "AppName", id="navbar",fluid = TRUE, 
-                                                         collapsible = TRUE,
+ui <- fluidPage(HTML(html_fix),theme = "style/style.css",tags$head(
+  tags$style(HTML("body{background-color: #f9f9eb;} 
+                  .navbar { background-color: #392613;}
+                  .nav.navbar-nav.navbar-right li a {color: #ffffff;}"))),
+                navbarPage(title = "House Whisperer", id="navbar",fluid = TRUE, 
+                                                         collapsible = TRUE,  
+                                                        
                                                          
                                                          # ----------------------------------
                                                          # tab panel 1 - Home
@@ -988,7 +994,7 @@ server <- function(input, output,session){
                     tabPanel("3-Room", leafletOutput("leaflet2")),
                     tabPanel("4-Room", leafletOutput("leaflet3")),
                     tabPanel("5-Room", leafletOutput("leaflet4")),
-                    tabPanel("EC", leafletOutput("leaflet5")),
+                    tabPanel("HDB Executive", leafletOutput("leaflet5")),
                     tabPanel("Multi-Generation", leafletOutput("leaflet6"))
         )
       )
@@ -999,7 +1005,7 @@ server <- function(input, output,session){
                     tabPanel("3-Room", leafletOutput("leaflet_avail_2")),
                     tabPanel("4-Room", leafletOutput("leaflet_avail_3")),
                     tabPanel("5-Room", leafletOutput("leaflet_avail_4")),
-                    tabPanel("EC", leafletOutput("leaflet_avail_5")),
+                    tabPanel("HDB Executive", leafletOutput("leaflet_avail_5")),
                     tabPanel("Multi-Generation", leafletOutput("leaflet_avail_6"))
         )
       )
