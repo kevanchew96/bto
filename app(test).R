@@ -57,10 +57,9 @@ mop$`Flat Type` <- gsub("EXECUTIVE", "Executive", mop$`Flat Type`)
 mop <- mop[!is.na(mop$`Price (Predicted)`),]
 mop$`Price (Predicted)` <- round(mop$`Price (Predicted)`)
 
-bto <- read.csv("BTO_new.csv")
-names(bto)[3] <- "Town/Estate"
-
 districts <- read.csv("Districts.csv")
+districts$Combined <- paste0(districts$Postal.District," - ", districts$General.Area)
+districts$Combined <- gsub(", Singapore", "",districts$Combined)
 
 # Primary schools
 schools <- read.csv("Primary Schools.csv")
@@ -719,7 +718,7 @@ ui <- fluidPage(HTML(html_fix),theme = "style/style.css",
                                         fluidRow(column(12,
                                                         selectInput(inputId = "AreaView",
                                                                     label = "Select Area to View:",
-                                                                    choices = seq(1:nrow(districts)),
+                                                                    choices = districts$Combined,
                                                                     selected = NULL),
                                                         radioButtons(inputId = "HousingType",
                                                                      label = "Select Housing Type:",
@@ -1069,8 +1068,9 @@ server <- function(input, output,session){
   
   # Set view to area
   observeEvent(input$AreaView,{
+    districts <- districts %>% filter(Combined==input$AreaView)
     leafletProxy("map") %>%
-      setView(lng=districts[input$AreaView,4],lat=districts[input$AreaView,5],zoom=15)
+      setView(lng=districts[1,4],lat=districts[1,5],zoom=15)
   })
   
   
