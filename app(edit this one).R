@@ -531,7 +531,7 @@ find_room <- function(ID){
     
   }else if ((substring(ID, 1, 1)) == 'B'| (substring(ID, 1, 1)) == 'b'){
     row_index <- as.numeric(substring(ID, 2, 9))
-    room_type <- bto[row_index, "flat_type"]
+    room_type <- bto[row_index, "Flat Type"]
     
   }
   
@@ -569,6 +569,29 @@ find_address <- function(ID){
   return(address)
 }
 
+
+#Match correct icon for relevant property
+
+find_icon <- function(ID){
+  
+  if((substring(ID, 1, 1)) == 'R'|(substring(ID, 1, 1)) == 'r'){
+    
+   icon_prop <- "Resale.png"
+    
+  }else if ((substring(ID, 1, 1)) == 'M'| (substring(ID, 1, 1)) == 'm'){
+   icon_prop <- "MOP.png"
+    
+  }else if ((substring(ID, 1, 1)) == 'B'| (substring(ID, 1, 1)) == 'b'){
+    icon_prop <- "BTO.png"
+    
+  }
+  
+  else{
+    icon_prop <- NA
+    
+  }
+  return(icon_prop)
+}
 
 
 ####################  UI FUNCTIONS #####################################################################################
@@ -621,6 +644,7 @@ financePlan <- function(){
       )
     ),
     tags$h4("Your Selected Properties"),
+    br(),
     leafletOutput("leaflet_parents"),
     tags$h4("Financial Breakdown"),
     br(),
@@ -1061,15 +1085,15 @@ server <- function(input, output,session){
  
     
     
-    addMarkers(lat = as.numeric(property1[2]), lng = as.numeric(property1[1]), popup = find_address(input$home_type_1), layerId = "1") %>%
-    addMarkers(lat = as.numeric(property2[2]), lng = as.numeric(property2[1]), popup = find_address(input$home_type_2), layerId = "2") %>%
-    addMarkers(lat = as.numeric(parents_add[2]),lng = as.numeric(parents_add[1]), popup = "Your Parents' Home", layerId = "3") %>%
+    addMarkers(lat = as.numeric(property1[2]), lng = as.numeric(property1[1]), popup = find_address(input$home_type_1), icon=makeIcon(find_icon(input$home_type_1),iconWidth=25, iconHeight=25), layerId = "1") %>%
+    addMarkers(lat = as.numeric(property2[2]), lng = as.numeric(property2[1]), popup = find_address(input$home_type_2), icon=makeIcon(find_icon(input$home_type_2),iconWidth=25, iconHeight=25), layerId = "2") %>%
+    addMarkers(lat = as.numeric(parents_add[2]),lng = as.numeric(parents_add[1]), popup = "Your Parents' Home", icon=makeIcon("Parents' House.png",iconWidth=25, iconHeight=25), layerId = "3") %>%
     addCircles(lat = as.numeric(parents_add[2]),lng = as.numeric(parents_add[1]), radius= 2000,fillOpacity=0.1, layerId="c")
     
     
     
     output$property_name_1 <- renderText({
-      find_address(input$home_type_1)
+      paste(find_address(input$home_type_1),find_room(input$home_type_1), sep = " ")
     })
     
   
@@ -1091,7 +1115,7 @@ server <- function(input, output,session){
     )
     
     output$property_name_2 <- renderText({
-      find_address(input$home_type_2)
+      paste(find_address(input$home_type_2),find_room(input$home_type_2), sep = " ")
     })
     
 
