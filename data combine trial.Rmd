@@ -105,8 +105,21 @@ bto_final
 
 ```{r}
 
-bto
-bto3 <- bto %>% gather(key = "flat_type", value = "price", c("2-Room Flexi", "3-Room", "4-Room","5-Room"))
-bto3 %>% filter(!is.na(bto3$price)) %>% arrange(`Town/Estate`)
 
+bto3 <- bto %>% gather(key = "flat_type", value = "price", c("2-Room Flexi", "3-Room", "4-Room","5-Room"))
+bto4 <- bto3 %>% filter(!is.na(bto3$price)) %>% arrange(`Town/Estate`)
+
+bto5 <- bto4[,2:9]
+bto5$NID <- seq.int(nrow(bto5))
+bto5$ID <- paste0("B",bto5$NID)
+
+bto6 <- bto5[, c(10,1,2,3,4,5,6,7,8,9)]
+bto7 <- bto6[, 1:9]
+
+write.csv(bto7,"C:\\Users\\kohji\\Dropbox\\DBA3702\\bto.csv")
+
+
+#C:/Users/kohji/Dropbox/DBA3702/R test 2
+
+#C:\\Users\\Ron\\Desktop\\MyData.csv
 ```
