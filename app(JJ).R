@@ -331,14 +331,15 @@ resale_breakdown<- function(base_price, income, flat_type, distance_from_p, with
   
   
   breakdown_plot <- ggplot(df, aes(fill=type, y=amount, x=total_price)) + 
-    geom_bar(position="stack", stat="identity") + 
+    geom_bar(position = position_stack(reverse = TRUE), stat="identity") + 
     geom_text(aes(label = stat(y), group = total_price), stat = 'summary', fun=sum, hjust=1) +  #ADD THE TOTAL SUM ABOVE
     ylab("Amount (SG$)") + xlab("") + 
     scale_fill_discrete(name = "Type") + 
     scale_y_continuous(label=comma) +
+    scale_fill_manual("legend", values = c("Balance" = "#999999", "Downpayment" = "#E69F00", "Family Grant" = "#56B4E9", "Singles Grant" = "#009E73", "Half housing Grant" = "#F0E442", "Enhanced Housing Grant" = "#0072B2", "Singles Enhanced Housing Grant" = "#D55E00", "Proximity Grant" = "#CC79A7")) +
     theme(axis.title.x=element_blank(),
           axis.text.x=element_blank(),
-          axis.ticks.x=element_blank())
+          axis.ticks.x=element_blank()) 
   
   breakdown <- ggplotly(breakdown_plot)
   
@@ -390,11 +391,12 @@ bto_breakdown<- function(base_price, income, is_married, citizenship, applicatio
   
   
   breakdown_plot <- ggplot(df, aes(fill=type, y=amount, x=total_price)) + 
-    geom_bar(position="stack", stat="identity") + 
+    geom_bar(position = position_stack(reverse = TRUE), stat="identity") + 
     geom_text(aes(label = stat(y), group = total_price), stat = 'summary', fun=sum, hjust=1) +  #ADD THE TOTAL SUM ABOVE
     ylab("Amount (SG$)") + xlab("") + 
     scale_fill_discrete(name = "Type") + 
     scale_y_continuous(label=comma) +
+    scale_fill_manual("legend", values = c("Balance" = "#999999", "Downpayment" = "#E69F00", "Enhanced Housing Grant" = "#0072B2", "Singles Enhanced Housing Grant" = "#D55E00")) +
     theme(axis.title.x=element_blank(),
           axis.text.x=element_blank(),
           axis.ticks.x=element_blank())
