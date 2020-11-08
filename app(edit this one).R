@@ -759,16 +759,31 @@ html_fix <- as.character(htmltools::tags$style(type = "text/css", css_fix))
 
 
 ui <- fluidPage(HTML(html_fix),theme = "style/style.css",tags$head(
-  tags$style(HTML("body{background-color: #f9f9eb;} 
+  tags$style(type = 'text/css',HTML("body{background-color: #f9f4ee;} 
                   .navbar { background-color: #392613;}
-                  .nav.navbar-nav.navbar-right li a {color: #ffffff;}"))),
-                navbarPage(title = "House Whisperer", id="navbar",fluid = TRUE, 
-                                                         collapsible = TRUE,  
+                  .color-me{color: #fefdfd;}
+                  .navbar-default .navbar-nav > .active > a, 
+                  .navbar-default .navbar-nav > .active > a:focus, 
+                  .navbar-default .navbar-nav > .active > a:hover {color: #555;background-color: #654321;}
+                  .img-id {float: left;}
+                  .navbar-brand {padding-top: 0px;}"))),
+                 
+  
+                navbarPage(
+                           title = div(
+                             div(
+                               class = "img-id",
+                               img(height = 50,
+                                   width = 40,src = "images/logo.png")
+                             )),
+
+                           id="navbar",fluid = TRUE, 
+                                                         collapsible = TRUE,
                                                         
                                                          
                                                          # ----------------------------------
                                                          # tab panel 1 - Home
-                                                         tabPanel("Home",
+                                                         tabPanel(tags$div(class="color-me","Home"),
                                                                   includeHTML("home.html"),
                                                                   tags$script(src = "plugins/scripts.js"),
                                                                   tags$head(
@@ -780,7 +795,7 @@ ui <- fluidPage(HTML(html_fix),theme = "style/style.css",tags$head(
                                                                               href = "images/logo_icon.png")
                                                                   )),
                                                          # tab panel 2 
-                                                         tabPanel("Overview",
+                                                         tabPanel(tags$div(class="color-me","Overview"),
                                                                   OverviewPrices() #function to display overview of prices on polygons
                                                                   ),
                                                          
@@ -788,7 +803,7 @@ ui <- fluidPage(HTML(html_fix),theme = "style/style.css",tags$head(
                                                          # tab panel 3 
 
                                                         
-                                                         tabPanel("Housing View", value = "housingview",fluid = TRUE, tags$style(button_color_css),
+                                                         tabPanel(tags$div(class="color-me","Housing View"), value = "housingview",fluid = TRUE, tags$style(button_color_css),
                                                                   tagList(
                                                                     div(class = "container",style="margin-bottom:50px;",
                                                                         h1("Housing View", class = "title fit-h1"),
@@ -936,7 +951,7 @@ ui <- fluidPage(HTML(html_fix),theme = "style/style.css",tags$head(
                            
                                                          # ----------------------------------
                                                          # tab panel 4 
-                                                         tabPanel("Financial Planning",value = "financeplanning",
+                                                         tabPanel(tags$div(class="color-me","Financial Planning"),value = "financeplanning",
                                                                   financePlan() #function to compare financial planning of two flats
                                                          )
 ))
