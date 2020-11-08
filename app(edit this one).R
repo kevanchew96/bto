@@ -184,12 +184,11 @@ enhanced_housing_grant <- function(income, is_married, citizenship, application)
 
 
 
-
 #resale_grant: Singles Enhanced CPF Housing Grant (EHG-SINGLES)
 half_enhanced_housing_grant <- function(income, is_married, citizenship, application){
   half_eh_grant <- 0
   
-  if((is_married == F  & citizenship == "SC") | (is_married == T & citizenship != "SC,SC") | (is_married == T & citizenship == "SC,SC" & application == "FT,ST" )){
+  if((is_married == F  & citizenship == "SC" ) | (is_married == T & citizenship != "SC,SC" & application == "FT,FT") | (is_married == T & citizenship == "SC,SC" & application == "FT,ST" )){
     if(income <= 750 ){
       half_eh_grant <- 40000
     } else if(income <= 1000){
