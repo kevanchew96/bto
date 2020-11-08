@@ -332,7 +332,7 @@ resale_breakdown<- function(base_price, income, flat_type, distance_from_p, with
   
   breakdown_plot <- ggplot(df, aes(fill=type, y=amount, x=total_price)) + 
     geom_bar(position = position_stack(reverse = TRUE), stat="identity") + 
-    geom_text(aes(label = stat(y), group = total_price), stat = 'summary', fun=sum, hjust=1) +  #ADD THE TOTAL SUM ABOVE
+    geom_text(aes(label = stat(y), group = total_price), stat = 'summary', fun=sum, hjust=1) +  #ADD THE TOTAL SUM ABOVE      
     ylab("Amount (SG$)") + xlab("") + 
     scale_fill_discrete(name = "Type") + 
     scale_y_continuous(label=comma) +
