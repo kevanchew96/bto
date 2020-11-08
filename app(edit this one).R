@@ -1260,7 +1260,7 @@ html_legend <- "<img src='https://www.flaticon.com/svg/static/icons/svg/2987/298
       leafletProxy("map") %>% 
         addCircles(data=coords,~lng,~lat,radius=4000,fillOpacity=0.1, layerId="x") %>% 
         addMarkers(data=coords,~lng,~lat, label="Your Parents' House",
-                   icon=makeIcon("Parents' House.png",iconWidth=12, iconHeight=12),layerId="y")
+                   icon=makeIcon("Parents' House.png",iconWidth=30, iconHeight=30),layerId="y")
     }
     else
     {
